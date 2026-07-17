@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+
+    <title>OSS Data - OSS IMS Monitoring</title>
+
+
+    <!-- FONT -->
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+
+
+    <!-- ICON -->
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+
+
+    <!-- CSS -->
+
+    <link rel="stylesheet"
+          href="css/app.css">
+
+    <link rel="stylesheet"
+          href="css/table.css">
+
+    <link rel="stylesheet"
+          href="css/modal.css">
+
+    <link rel="stylesheet"
+          href="css/responsive.css">
+
+
+</head>
+
+
+<body>
+
+
+<div class="wrapper">
+
+
+    <!-- ================= -->
+    <!-- SIDEBAR -->
+    <!-- ================= -->
+
+
+    <aside class="sidebar">
+
+
+        <div class="logo">
+
+
+            <div class="logo-icon">
+
+                <i class="bi bi-bar-chart-fill"></i>
+
+            </div>
+
+
+            <div>
+
+                <h2>OSS IMS</h2>
+
+                <span>Monitoring</span>
+
+            </div>
+
+
+        </div>
+
+
+
+
+
+        <nav class="menu">
+
+
+            <a href="index.html">
+
+                <i class="bi bi-speedometer2"></i>
+
+                Dashboard
+
+            </a>
+
+
+
+
+
+            <a href="oss.html"
+               class="active">
+
+
+                <i class="bi bi-folder2-open"></i>
+
+                OSS
+
+
+            </a>
+
+
+
+
+
+            <a href="ims.html">
+
+
+                <i class="bi bi-journal-text"></i>
+
+                IMS
+
+
+            </a>
+
+
+
+
+
+            <a href="master.html">
+
+
+                <i class="bi bi-diagram-3"></i>
+
+                Master Monitoring
+
+
+            </a>
+
+
+
+        </nav>
+
+
+
+
+
+    </aside>
+
+
+
+
+
+
+
+
+
+    <!-- ================= -->
+    <!-- MAIN -->
+    <!-- ================= -->
+
+
+    <main class="main-content">
+
+
+
+
+
+        <!-- HEADER -->
+
+
+        <header class="topbar">
+
+
+            <div>
+
+
+                <h1>
+
+                    Data OSS
+
+                </h1>
+
+
+                <p>
+
+                    Management Reference OSS
+
+                </p>
+
+
+            </div>
+
+
+
+
+
+            <div class="topbar-right">
+
+
+                <span id="loadingOSS">
+
+                    Ready
+
+                </span>
+
+
+            </div>
+
+
+
+        </header>
+
+
+
+
+
+
+
+
+
+        <!-- ================= -->
+        <!-- CARD SUMMARY -->
+        <!-- ================= -->
+
+
+        <section class="summary-grid">
+
+
+
+            <div class="card summary-card">
+
+
+                <div class="card-icon blue">
+
+
+                    <i class="bi bi-folder-fill"></i>
+
+
+                </div>
+
+
+
+                <div>
+
+
+                    <h4>
+
+                        Total OSS
+
+                    </h4>
+
+
+                    <h2 id="totalOSS">
+
+                        --
+
+                    </h2>
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+            <div class="card summary-card">
+
+
+                <div class="card-icon green">
+
+
+                    <i class="bi bi-check-circle"></i>
+
+
+                </div>
+
+
+
+                <div>
+
+
+                    <h4>
+
+                        Status
+
+                    </h4>
+
+
+                    <h2>
+
+                        Active
+
+                    </h2>
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+        </section>
+
+
+
+
+
+
+
+
+        <!-- ================= -->
+        <!-- TOOLBAR -->
+        <!-- ================= -->
+
+
+        <section class="table-toolbar">
+
+
+            <div class="search-box">
+
+
+                <i class="bi bi-search"></i>
+
+
+                <input
+
+                type="text"
+
+                id="searchOSS"
+
+                placeholder="Cari Reference Code / Customer..."
+
+                onkeyup="searchOSS()">
+
+
+
+            </div>
+
+
+
+
+
+
+
+            <div class="toolbar-action">
+
+
+                <button
+
+                class="btn btn-primary"
+
+                onclick="openAddOSS()">
+
+
+
+                    <i class="bi bi-plus-lg"></i>
+
+                    Tambah Data
+
+
+                </button>
+
+
+
+
+
+
+
+                <button
+
+                class="btn btn-success"
+
+                onclick="openUploadOSS()">
+
+
+
+                    <i class="bi bi-file-earmark-excel"></i>
+
+
+                    Upload Excel
+
+
+                </button>
+
+
+
+            </div>
+
+
+
+        </section>
+        
+        <!-- ========================= -->
+        <!-- TABLE OSS -->
+        <!-- ========================= -->
+
+
+        <section class="table-card card">
+
+
+            <div class="table-header">
+
+
+                <h3>
+
+                    Data OSS
+
+                </h3>
+
+
+                <span>
+
+                    Reference Data
+
+                </span>
+
+
+            </div>
+
+
+
+
+
+            <div class="table-responsive">
+
+
+                <table>
+
+
+                    <thead>
+
+
+                        <tr>
+
+
+                            <th>
+
+                                Reference Code
+
+                            </th>
+
+
+                            <th>
+
+                                Cust ID
+
+                            </th>
+
+
+                            <th>
+
+                                Customer
+
+                            </th>
+
+
+                            <th>
+
+                                City
+
+                            </th>
+
+
+                            <th>
+
+                                Action
+
+                            </th>
+
+
+                        </tr>
+
+
+                    </thead>
+
+
+
+
+
+
+                    <tbody id="ossData">
+
+
+                        <tr>
+
+
+                            <td colspan="5">
+
+
+                                Loading data...
+
+
+                            </td>
+
+
+                        </tr>
+
+
+                    </tbody>
+
+
+
+                </table>
+
+
+            </div>
+
+
+
+        </section>
+
+
+
+
+
+
+
+
+
+        <!-- ========================= -->
+        <!-- MODAL TAMBAH / EDIT OSS -->
+        <!-- ========================= -->
+
+
+        <div id="modalOSS"
+             class="modal">
+
+
+
+            <div class="modal-content">
+
+
+
+                <div class="modal-header">
+
+
+                    <h3 id="ossModalTitle">
+
+                        Tambah Data OSS
+
+                    </h3>
+
+
+
+                    <button
+
+                    onclick="closeOSS()">
+
+                        ✕
+
+
+                    </button>
+
+
+                </div>
+
+
+
+
+
+
+
+                <div class="modal-body">
+
+
+
+                    <label>
+
+                        Reference Code
+
+                    </label>
+
+
+                    <input
+
+                    type="text"
+
+                    id="referenceCode"
+
+                    placeholder="Reference Code">
+
+
+
+
+
+
+
+                    <label>
+
+                        Cust ID
+
+                    </label>
+
+
+                    <input
+
+                    type="text"
+
+                    id="custID"
+
+                    placeholder="Cust ID">
+
+
+
+
+
+
+
+                    <label>
+
+                        Customer
+
+                    </label>
+
+
+                    <input
+
+                    type="text"
+
+                    id="customer"
+
+                    placeholder="Customer">
+
+
+
+
+
+
+
+                    <label>
+
+                        City
+
+                    </label>
+
+
+                    <input
+
+                    type="text"
+
+                    id="city"
+
+                    placeholder="City">
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+                <div class="modal-footer">
+
+
+                    <button
+
+                    class="btn btn-secondary"
+
+                    onclick="closeOSS()">
+
+
+                        Batal
+
+
+                    </button>
+
+
+
+
+
+                    <button
+
+                    class="btn btn-primary"
+
+                    onclick="saveOSS()">
+
+
+
+                        Simpan
+
+
+                    </button>
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+        </div>
+
+
+
+
+
+
+
+
+
+        <!-- ========================= -->
+        <!-- MODAL UPLOAD EXCEL -->
+        <!-- ========================= -->
+
+
+        <div id="uploadOSSModal"
+
+             class="modal">
+
+
+
+            <div class="modal-content">
+
+
+
+                <div class="modal-header">
+
+
+                    <h3>
+
+                        Upload Excel OSS
+
+                    </h3>
+
+
+
+
+                    <button
+
+                    onclick="closeUploadOSS()">
+
+
+                        ✕
+
+
+                    </button>
+
+
+                </div>
+
+
+
+
+
+
+                <div class="modal-body">
+
+
+
+                    <label>
+
+                        Pilih File Excel
+
+                    </label>
+
+
+
+                    <input
+
+                    type="file"
+
+                    id="excelOSS"
+
+                    accept=".xlsx,.xls">
+
+
+
+                    <small>
+
+
+                        Format:
+
+                        Reference Code,
+
+                        Cust ID,
+
+                        Customer,
+
+                        City
+
+
+                    </small>
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+                <div class="modal-footer">
+
+
+                    <button
+
+                    class="btn btn-secondary"
+
+                    onclick="closeUploadOSS()">
+
+
+
+                        Batal
+
+
+                    </button>
+
+
+
+
+
+                    <button
+
+                    class="btn btn-success"
+
+                    onclick="uploadOSS()">
+
+
+
+                        Upload
+
+
+                    </button>
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+        </div>
+
+
+
+
+
+
+
+
+
+        <!-- ========================= -->
+        <!-- FOOTER -->
+        <!-- ========================= -->
+
+
+        <footer class="footer">
+
+
+            <span>
+
+                © 2026 OSS IMS Monitoring
+
+            </span>
+
+
+
+            <span>
+
+                Google Apps Script API
+
+            </span>
+
+
+
+        </footer>
+
+
+
+
+
+
+    </main>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- ========================= -->
+<!-- JAVASCRIPT -->
+<!-- ========================= -->
+
+
+<script src="js/api.js"></script>
+
+<script src="js/excel.js"></script>
+
+<script src="js/oss.js"></script>
+
+<script src="js/realtime.js"></script>
+
+
+
+
+</body>
+
+
+</html>
