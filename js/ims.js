@@ -986,9 +986,7 @@ function editIMS(index){
 
 
 
-    editIMS_ID =
-
-    data.reference_code;
+    editIMS_ID=data.id
 
 
 
@@ -1212,9 +1210,7 @@ async function deleteIMS(index){
 
 
 
-        await deleteIMSAPI(
-
-            data.reference_code
+        await deleteIMSAPI(data.id)
 
         );
 
