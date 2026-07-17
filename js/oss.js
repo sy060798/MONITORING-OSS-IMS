@@ -556,36 +556,26 @@ async function saveOSS(){
 
         if(editOSS_ID){
 
+    await updateOSSAPI({
 
+        id:
+        editOSS_ID,
 
-            await updateOSSAPI(
+        reference_code:
+        data.reference_code,
 
-                {
+        cust_id:
+        data.cust_id,
 
-                    reference_code:
+        customer:
+        data.customer,
 
-                    editOSS_ID,
+        city:
+        data.city
 
-                    cust_id:
+    });
 
-                    data.cust_id,
-
-                    customer:
-
-                    data.customer,
-
-                    city:
-
-                    data.city
-
-
-                }
-
-            );
-
-
-
-        }
+}
 
 
 
@@ -683,8 +673,7 @@ function editOSS(index){
 
 
     editOSS_ID =
-
-    data.reference_code;
+data.id;
 
 
 
@@ -868,10 +857,8 @@ async function deleteOSS(index){
 
 
         await deleteOSSAPI(
-
-            data.reference_code
-
-        );
+    data.id
+);
 
 
 
