@@ -1,0 +1,600 @@
+/* ========================================
+   TABLE STYLE
+   OSS IMS MONITORING
+======================================== */
+
+
+
+
+
+
+/* ========================================
+   TABLE WRAPPER
+======================================== */
+
+
+.table-card{
+
+
+    background:white;
+
+
+    border-radius:18px;
+
+
+    padding:20px;
+
+
+    box-shadow:var(--shadow);
+
+
+    overflow:hidden;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+.table-header{
+
+
+    display:flex;
+
+
+    justify-content:space-between;
+
+
+    align-items:center;
+
+
+    margin-bottom:20px;
+
+
+    gap:15px;
+
+
+
+}
+
+
+
+
+
+
+
+
+.table-header h3{
+
+
+    font-size:20px;
+
+
+    color:#0f172a;
+
+
+}
+
+
+
+
+
+
+
+
+
+/* ========================================
+   TOOLBAR
+======================================== */
+
+
+.table-toolbar{
+
+
+    display:flex;
+
+
+    gap:10px;
+
+
+    flex-wrap:wrap;
+
+
+    margin-bottom:20px;
+
+
+
+}
+
+
+
+
+
+.table-toolbar input,
+
+
+.table-toolbar select{
+
+
+    min-width:180px;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+/* ========================================
+   TABLE CONTAINER
+======================================== */
+
+
+.table-responsive{
+
+
+    width:100%;
+
+
+    overflow-x:auto;
+
+
+}
+
+
+
+
+
+
+
+
+
+table{
+
+
+    width:100%;
+
+
+    border-collapse:collapse;
+
+
+    min-width:800px;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+thead{
+
+
+    background:#f8fafc;
+
+
+
+}
+
+
+
+
+
+
+
+thead th{
+
+
+    text-align:left;
+
+
+    padding:15px;
+
+
+    font-size:13px;
+
+
+    color:#475569;
+
+
+    border-bottom:1px solid #e2e8f0;
+
+
+    white-space:nowrap;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+tbody td{
+
+
+    padding:14px 15px;
+
+
+    border-bottom:1px solid #f1f5f9;
+
+
+    color:#334155;
+
+
+    font-size:14px;
+
+
+}
+
+
+
+
+
+tbody tr{
+
+
+    transition:.2s;
+
+
+
+}
+
+
+
+
+
+
+tbody tr:hover{
+
+
+    background:#f8fafc;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+/* ========================================
+   EMPTY DATA
+======================================== */
+
+
+.empty-data{
+
+
+    text-align:center;
+
+
+    padding:40px;
+
+
+    color:#64748b;
+
+
+    font-size:15px;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+/* ========================================
+   ACTION BUTTON
+======================================== */
+
+
+.action-group{
+
+
+    display:flex;
+
+
+    gap:8px;
+
+
+}
+
+
+
+
+
+
+
+
+
+.btn-edit{
+
+
+    background:#dbeafe;
+
+
+    color:#1d4ed8;
+
+
+    padding:7px 12px;
+
+
+    border-radius:8px;
+
+
+    border:none;
+
+
+    cursor:pointer;
+
+
+    font-size:13px;
+
+
+
+}
+
+
+
+
+
+
+
+.btn-edit:hover{
+
+
+    background:#bfdbfe;
+
+
+}
+
+
+
+
+
+
+
+
+
+.btn-delete{
+
+
+    background:#fee2e2;
+
+
+    color:#dc2626;
+
+
+    padding:7px 12px;
+
+
+    border-radius:8px;
+
+
+    border:none;
+
+
+    cursor:pointer;
+
+
+    font-size:13px;
+
+
+
+}
+
+
+
+
+
+
+
+.btn-delete:hover{
+
+
+    background:#fecaca;
+
+
+}
+
+
+
+
+
+
+
+
+
+/* ========================================
+   DATA COUNT
+======================================== */
+
+
+.data-info{
+
+
+    display:flex;
+
+
+    justify-content:space-between;
+
+
+    align-items:center;
+
+
+    margin-top:15px;
+
+
+    color:#64748b;
+
+
+    font-size:14px;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+/* ========================================
+   LOADING TABLE
+======================================== */
+
+
+.table-loading{
+
+
+    text-align:center;
+
+
+    padding:30px;
+
+
+    color:#2563eb;
+
+
+    font-weight:600;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+/* ========================================
+   FILTER PANEL
+======================================== */
+
+
+.filter-panel{
+
+
+    background:#f8fafc;
+
+
+    padding:15px;
+
+
+    border-radius:12px;
+
+
+    display:flex;
+
+
+    gap:12px;
+
+
+    flex-wrap:wrap;
+
+
+    margin-bottom:20px;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+.filter-panel label{
+
+
+    font-size:13px;
+
+
+    color:#64748b;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+/* ========================================
+   MOBILE TABLE
+======================================== */
+
+
+@media(max-width:768px){
+
+
+
+    .table-card{
+
+
+        padding:15px;
+
+
+    }
+
+
+
+
+    .table-header{
+
+
+        flex-direction:column;
+
+
+        align-items:flex-start;
+
+
+
+    }
+
+
+
+}
