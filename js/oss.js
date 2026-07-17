@@ -1145,7 +1145,468 @@ function openUploadOSS(){
 
 
 
+// ========================================
+// PATCH OSS HIGH PERFORMANCE
+// PAGINATION VERSION
+// TAMBAH DI PALING BAWAH OSS.JS
+// ========================================
 
+
+let OSS_PAGE = 1;
+
+let OSS_LIMIT = 100;
+
+let OSS_TOTAL = 0;
+
+
+
+
+
+// ========================================
+// LOAD OSS PAGING
+// ========================================
+
+
+async function loadOSS(){
+
+
+    try{
+
+
+        showLoadingOSS(true);
+
+
+
+        const result = await apiRequest(
+
+            "getOSS",
+
+            {
+
+                page:OSS_PAGE,
+
+                limit:OSS_LIMIT
+
+            }
+
+        );
+
+
+
+
+        if(!result.success){
+
+            throw new Error(
+                result.message
+            );
+
+        }
+
+
+
+
+        ossData = result.data || [];
+
+
+
+        OSS_TOTAL = result.total || 0;
+
+
+
+
+        tampilkanOSS(ossData);
+
+
+
+        updateTotalOSS();
+
+
+
+        renderOSSPagination();
+
+
+
+    }
+
+
+    catch(error){
+
+
+
+        console.error(
+
+            "LOAD OSS ERROR",
+
+            error
+
+        );
+
+
+
+        let table =
+
+        document.getElementById(
+            "ossData"
+        );
+
+
+
+        if(table){
+
+
+            table.innerHTML=`
+
+            <tr>
+
+            <td colspan="5">
+
+            Gagal load OSS
+
+            </td>
+
+            </tr>
+
+            `;
+
+
+        }
+
+
+    }
+
+
+    finally{
+
+
+        showLoadingOSS(false);
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+// ========================================
+// TOTAL DATA SERVER
+// ========================================
+
+
+function updateTotalOSS(){
+
+
+    let el =
+
+    document.getElementById(
+        "totalOSS"
+    );
+
+
+
+    if(el){
+
+
+        el.innerText =
+
+        OSS_TOTAL +
+
+        " Data";
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+// ========================================
+// PAGINATION BUTTON
+// ========================================
+
+
+function renderOSSPagination(){
+
+
+
+    let el =
+
+    document.getElementById(
+        "ossPagination"
+    );
+
+
+
+    if(!el){
+
+        return;
+
+    }
+
+
+
+
+    let totalPage =
+
+    Math.ceil(
+
+        OSS_TOTAL /
+
+        OSS_LIMIT
+
+    );
+
+
+
+
+
+    el.innerHTML = `
+
+
+
+    <button
+
+    onclick="prevOSSPage()"
+
+    >
+
+    ◀
+
+    </button>
+
+
+
+    <span>
+
+    ${OSS_PAGE}
+
+    /
+
+    ${totalPage || 1}
+
+    </span>
+
+
+
+
+    <button
+
+    onclick="nextOSSPage()"
+
+    >
+
+    ▶
+
+    </button>
+
+
+    `;
+
+
+
+}
+
+
+
+
+
+
+function nextOSSPage(){
+
+
+    let max =
+
+    Math.ceil(
+
+        OSS_TOTAL /
+
+        OSS_LIMIT
+
+    );
+
+
+
+    if(OSS_PAGE < max){
+
+
+        OSS_PAGE++;
+
+
+        loadOSS();
+
+
+    }
+
+
+}
+
+
+
+
+
+
+function prevOSSPage(){
+
+
+    if(OSS_PAGE > 1){
+
+
+        OSS_PAGE--;
+
+
+        loadOSS();
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+// ========================================
+// SEARCH OSS PAGE ONLY
+// ========================================
+
+
+function searchOSS(){
+
+
+
+    let keyword =
+
+
+    document
+
+    .getElementById(
+
+        "searchOSS"
+
+    )
+
+    .value
+
+    .toLowerCase();
+
+
+
+
+
+    let result =
+
+    ossData.filter(item=>{
+
+
+        return (
+
+
+
+        String(
+            item.reference_code
+        )
+
+        .toLowerCase()
+
+        .includes(keyword)
+
+
+
+        ||
+
+
+
+        String(
+            item.customer
+        )
+
+        .toLowerCase()
+
+        .includes(keyword)
+
+
+
+        ||
+
+
+
+        String(
+            item.city
+        )
+
+        .toLowerCase()
+
+        .includes(keyword)
+
+
+
+        );
+
+
+    });
+
+
+
+
+    tampilkanOSS(result);
+
+
+
+}
+
+
+
+
+
+
+
+// ========================================
+// AFTER SAVE REFRESH PAGE
+// ========================================
+
+
+async function refreshAfterOSS(){
+
+
+
+    OSS_PAGE=1;
+
+
+
+    await loadOSS();
+
+
+
+}
+
+
+
+
+
+
+
+// ========================================
+// START OSS PAGING
+// ========================================
+
+
+console.log(
+
+"OSS HIGH PERFORMANCE PATCH READY"
+
+);
 
 
 
