@@ -1576,3 +1576,42 @@ document.addEventListener(
 
 
 });
+
+// ========================================
+// EXCEL UPLOAD CONNECTOR IMS
+// ========================================
+
+
+function uploadIMS(){
+
+
+    if(typeof uploadIMSExcel === "function"){
+
+
+        return uploadIMSExcel();
+
+
+    }
+
+
+    else{
+
+
+        console.error(
+
+            "uploadIMSExcel tidak ditemukan"
+
+        );
+
+
+        alert(
+
+            "Module Excel IMS belum aktif"
+
+        );
+
+
+    }
+
+
+}
