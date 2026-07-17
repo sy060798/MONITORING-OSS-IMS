@@ -203,21 +203,18 @@ function readExcel(file){
 function cleanExcelHeader(text){
 
 
-
     return String(text)
 
     .trim()
 
     .toLowerCase()
 
+    .replace(/_/g," ")
+
     .replace(/\s+/g," ");
 
 
-
 }
-
-
-
 
 
 
@@ -1646,3 +1643,22 @@ console.log(
 "Excel Module Loaded"
 
 );
+
+// ========================================
+// COMPATIBILITY BUTTON
+// ========================================
+
+
+function uploadOSS(){
+
+    return uploadOSSExcel();
+
+}
+
+
+
+function uploadIMS(){
+
+    return uploadIMSExcel();
+
+}
