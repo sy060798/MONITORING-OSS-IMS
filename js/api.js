@@ -47,35 +47,17 @@ async function apiRequest(action,data={}){
 
         const response = await fetch(API_URL,{
 
+    method:"POST",
 
-            method:"POST",
+    body:JSON.stringify({
 
+        action:action,
 
-            headers:{
+        data:data
 
+    })
 
-                "Content-Type":
-
-                "application/json"
-
-
-            },
-
-
-
-            body:JSON.stringify({
-
-
-                action:action,
-
-
-                data:data
-
-
-            })
-
-
-        });
+});
 
 
 
