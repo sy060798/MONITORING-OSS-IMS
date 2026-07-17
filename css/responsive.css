@@ -1,0 +1,494 @@
+/* ========================================
+   RESPONSIVE STYLE
+   OSS IMS MONITORING
+======================================== */
+
+
+
+
+
+
+/* ========================================
+   TABLET
+======================================== */
+
+
+@media(max-width:1024px){
+
+
+
+
+
+    .sidebar{
+
+
+        width:220px;
+
+
+
+    }
+
+
+
+
+
+
+    .main-content{
+
+
+        margin-left:220px;
+
+
+        width:calc(100% - 220px);
+
+
+
+    }
+
+
+
+
+
+
+
+    .summary-grid{
+
+
+        grid-template-columns:
+
+
+        repeat(2,1fr);
+
+
+
+    }
+
+
+
+
+
+
+
+    .dashboard-grid{
+
+
+        grid-template-columns:
+
+
+        1fr;
+
+
+
+    }
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+/* ========================================
+   MOBILE
+======================================== */
+
+
+@media(max-width:768px){
+
+
+
+
+
+    .wrapper{
+
+
+        display:block;
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    /* SIDEBAR */
+
+
+    .sidebar{
+
+
+        position:relative;
+
+
+        width:100%;
+
+
+        height:auto;
+
+
+        padding:15px;
+
+
+
+    }
+
+
+
+
+
+
+
+    .logo{
+
+
+        margin-bottom:20px;
+
+
+
+    }
+
+
+
+
+
+
+
+    .menu{
+
+
+        flex-direction:row;
+
+
+        overflow-x:auto;
+
+
+
+    }
+
+
+
+
+
+
+
+    .menu a{
+
+
+        white-space:nowrap;
+
+
+        padding:10px 15px;
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    /* MAIN */
+
+
+    .main-content{
+
+
+        margin-left:0;
+
+
+        width:100%;
+
+
+        padding:15px;
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    .topbar{
+
+
+        flex-direction:column;
+
+
+        align-items:flex-start;
+
+
+        gap:10px;
+
+
+
+    }
+
+
+
+
+
+
+
+    .topbar h1{
+
+
+        font-size:22px;
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    /* DASHBOARD */
+
+
+    .summary-grid{
+
+
+        grid-template-columns:
+
+
+        1fr;
+
+
+
+    }
+
+
+
+
+
+
+
+    .summary-card h2{
+
+
+        font-size:26px;
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    .dashboard-grid{
+
+
+        grid-template-columns:
+
+
+        1fr;
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    /* TOOLBAR */
+
+
+    .table-toolbar,
+
+
+    .filter-panel{
+
+
+        flex-direction:column;
+
+
+
+    }
+
+
+
+
+
+
+
+    .table-toolbar input,
+
+
+    .table-toolbar select{
+
+
+        width:100%;
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    /* BUTTON */
+
+
+    .btn{
+
+
+        width:100%;
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+/* ========================================
+   SMALL PHONE
+======================================== */
+
+
+@media(max-width:480px){
+
+
+
+
+
+
+    .logo h2{
+
+
+        font-size:17px;
+
+
+
+    }
+
+
+
+
+
+
+
+    .card{
+
+
+        padding:15px;
+
+
+
+    }
+
+
+
+
+
+
+
+    .summary-card{
+
+
+        min-height:100px;
+
+
+
+    }
+
+
+
+
+
+
+
+
+    .card-icon{
+
+
+        width:50px;
+
+
+        height:50px;
+
+
+        font-size:22px;
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    .modal-content{
+
+
+        width:95%;
+
+
+
+    }
+
+
+
+
+
+}
