@@ -11,16 +11,15 @@
 // ========================================
 
 
-const API_URL = 
+const API_URL =
 
 "https://script.google.com/macros/s/AKfycbyKU9D3cIvJaR9Y7Tj7vOsMSHmF7ND_rFpXGHs76A2dyOGWFQ2a4l4qUWA-rOojxxgR/exec";
 
 
 
 
-
 // ========================================
-// GLOBAL REQUEST
+// CORE REQUEST
 // ========================================
 
 
@@ -36,17 +35,6 @@ async function apiRequest(action,data={}){
             method:"POST",
 
 
-            headers:{
-
-
-                "Content-Type":
-
-                "application/json"
-
-
-            },
-
-
             body:JSON.stringify({
 
 
@@ -59,18 +47,15 @@ async function apiRequest(action,data={}){
             })
 
 
-
         });
 
 
 
 
 
-
-        const result = 
+        const result =
 
         await response.json();
-
 
 
 
@@ -85,7 +70,6 @@ async function apiRequest(action,data={}){
 
 
     catch(error){
-
 
 
         console.error(
@@ -114,8 +98,6 @@ async function apiRequest(action,data={}){
 
 
 
-
-
 // ========================================
 // RESPONSE CHECK
 // ========================================
@@ -130,13 +112,12 @@ function checkResponse(result){
 
         throw new Error(
 
-        "Tidak ada respon server"
+        "Server tidak memberikan respon"
 
         );
 
 
     }
-
 
 
 
@@ -145,18 +126,17 @@ function checkResponse(result){
     if(result.success===false){
 
 
-
         throw new Error(
 
-        result.message ||
+            result.message ||
 
-        "Request gagal"
+            "Request gagal"
 
         );
 
 
-
     }
+
 
 
 
@@ -173,8 +153,6 @@ function checkResponse(result){
 
 
 
-
-
 // ========================================
 // SAFE REQUEST
 // ========================================
@@ -183,12 +161,10 @@ function checkResponse(result){
 async function safeRequest(action,data={}){
 
 
-
     try{
 
 
-
-        let result = 
+        const result =
 
         await apiRequest(
 
@@ -200,16 +176,11 @@ async function safeRequest(action,data={}){
 
 
 
-
-
-
         return checkResponse(result);
 
 
 
-
     }
-
 
 
     catch(error){
@@ -226,18 +197,21 @@ async function safeRequest(action,data={}){
 
 
 
-
-
-        showToast(
-
-        error.message,
-
-        "error"
-
-        );
+        if(typeof showToast==="function"){
 
 
 
+            showToast(
+
+            error.message,
+
+            "error"
+
+            );
+
+
+
+        }
 
 
 
@@ -251,7 +225,6 @@ async function safeRequest(action,data={}){
             data:[]
 
 
-
         };
 
 
@@ -259,10 +232,90 @@ async function safeRequest(action,data={}){
     }
 
 
+}
+
+
+
+
+
+
+
+// ========================================
+// TEST CONNECTION
+// ========================================
+
+
+async function testConnection(){
+
+
+    try{
+
+
+        const result =
+
+        await apiRequest(
+
+        "test"
+
+        );
+
+
+
+
+
+        console.log(
+
+        "API ONLINE",
+
+        result
+
+        );
+
+
+
+        return true;
+
+
+
+    }
+
+
+    catch(error){
+
+
+
+        console.error(
+
+        "API OFFLINE",
+
+        error
+
+        );
+
+
+
+        return false;
+
+
+
+    }
+
 
 }
+
+
+
+
+
+
+
+console.log(
+
+"API MODULE READY"
+
+);
 // ========================================
-// OSS API
+// OSS MODULE
 // ========================================
 
 
@@ -275,7 +328,10 @@ async function safeRequest(action,data={}){
 async function getOSS(){
 
 
-    let result = await safeRequest(
+
+    const result =
+
+    await safeRequest(
 
         "getOSS"
 
@@ -283,7 +339,11 @@ async function getOSS(){
 
 
 
+
+
     return result.data || [];
+
+
 
 }
 
@@ -313,29 +373,30 @@ async function addOSSAPI(data){
 
             reference_code:
 
-            data.reference_code,
+            data.reference_code || "",
 
 
 
             cust_id:
 
-            data.cust_id,
+            data.cust_id || "",
 
 
 
             customer:
 
-            data.customer,
+            data.customer || "",
 
 
 
             city:
 
-            data.city
+            data.city || ""
 
 
 
         }
+
 
     );
 
@@ -364,35 +425,8 @@ async function updateOSSAPI(data){
 
         "updateOSS",
 
-        {
+        data
 
-
-
-            reference_code:
-
-            data.reference_code,
-
-
-
-            cust_id:
-
-            data.cust_id,
-
-
-
-            customer:
-
-            data.customer,
-
-
-
-            city:
-
-            data.city
-
-
-
-        }
 
     );
 
@@ -429,6 +463,7 @@ async function deleteOSSAPI(id){
 
         }
 
+
     );
 
 
@@ -445,7 +480,7 @@ async function deleteOSSAPI(id){
 
 // ========================================
 // BULK OSS
-// IMPORT EXCEL
+// EXCEL UPLOAD
 // ========================================
 
 
@@ -475,7 +510,7 @@ async function bulkAddOSSAPI(data){
 
 
 // ========================================
-// FORMAT OSS DATA
+// FORMAT OSS
 // ========================================
 
 
@@ -486,61 +521,34 @@ function formatOSS(data){
     return {
 
 
+
+        id:
+
+        data.id || "",
+
+
+
         reference_code:
 
-
-        String(
-
-            data.reference_code ||
-
-            ""
-
-        ).trim(),
-
-
+        data.reference_code || "",
 
 
 
         cust_id:
 
-
-        String(
-
-            data.cust_id ||
-
-            ""
-
-        ).trim(),
-
-
+        data.cust_id || "",
 
 
 
         customer:
 
-
-        String(
-
-            data.customer ||
-
-            ""
-
-        ).trim(),
-
-
+        data.customer || "",
 
 
 
         city:
 
-
-        String(
-
-            data.city ||
-
-            ""
-
-        ).trim()
+        data.city || ""
 
 
 
@@ -559,53 +567,27 @@ function formatOSS(data){
 
 
 // ========================================
-// VALIDATE OSS
+// CACHE READY
 // ========================================
 
 
-function validateOSS(data){
-
-
-
-    if(!data.reference_code){
-
-
-
-        throw new Error(
-
-        "Reference Code wajib diisi"
-
-        );
-
-
-
-    }
+let OSS_CACHE=[];
 
 
 
 
 
-
-    if(!data.customer){
-
-
-
-        throw new Error(
-
-        "Customer wajib diisi"
-
-        );
+async function loadOSSCache(){
 
 
 
-    }
+    OSS_CACHE =
+
+    await getOSS();
 
 
 
-
-
-
-    return true;
+    return OSS_CACHE;
 
 
 
@@ -620,71 +602,33 @@ function validateOSS(data){
 
 
 // ========================================
-// SAVE OSS AUTO
+// FIND OSS
 // ========================================
 
 
-async function saveOSSData(data){
+function findOSS(reference_code){
 
 
 
-    let cleanData =
-
-    formatOSS(data);
+    return OSS_CACHE.find(item=>
 
 
 
+        item.reference_code ===
 
-
-    validateOSS(cleanData);
-
-
-
+        reference_code
 
 
 
-    if(cleanData.id){
-
-
-
-        return await updateOSSAPI(
-
-            cleanData
-
-        );
-
-
-
-    }
-
-
-
-
-
-
-    else{
-
-
-
-        return await addOSSAPI(
-
-            cleanData
-
-        );
-
-
-
-    }
+    );
 
 
 
 }
 
 // ========================================
-// IMS API
+// IMS MODULE
 // ========================================
-
-
 
 
 
@@ -697,13 +641,14 @@ async function getIMS(){
 
 
 
-    let result = await safeRequest(
+    const result =
 
+    await safeRequest(
 
         "getIMS"
 
-
     );
+
 
 
 
@@ -733,34 +678,32 @@ async function addIMSAPI(data){
 
     return await safeRequest(
 
-
         "addIMS",
-
 
         {
 
 
             wo:
 
-            data.wo,
+            data.wo || "",
 
 
 
             reference_code:
 
-            data.reference_code,
+            data.reference_code || "",
 
 
 
             quotation:
 
-            data.quotation,
+            data.quotation || "",
 
 
 
             job_name:
 
-            data.job_name,
+            data.job_name || "",
 
 
 
@@ -772,7 +715,7 @@ async function addIMSAPI(data){
 
             bulan:
 
-            data.bulan
+            data.bulan || ""
 
 
 
@@ -804,50 +747,9 @@ async function updateIMSAPI(data){
 
     return await safeRequest(
 
-
         "updateIMS",
 
-
-        {
-
-
-            wo:
-
-            data.wo,
-
-
-
-            reference_code:
-
-            data.reference_code,
-
-
-
-            quotation:
-
-            data.quotation,
-
-
-
-            job_name:
-
-            data.job_name,
-
-
-
-            status:
-
-            data.status,
-
-
-
-            bulan:
-
-            data.bulan
-
-
-
-        }
+        data
 
 
     );
@@ -875,9 +777,7 @@ async function deleteIMSAPI(id){
 
     return await safeRequest(
 
-
         "deleteIMS",
-
 
         {
 
@@ -904,7 +804,7 @@ async function deleteIMSAPI(id){
 
 // ========================================
 // BULK IMS
-// IMPORT EXCEL
+// EXCEL UPLOAD
 // ========================================
 
 
@@ -914,9 +814,7 @@ async function bulkAddIMSAPI(data){
 
     return await safeRequest(
 
-
         "bulkIMS",
-
 
         data
 
@@ -936,7 +834,7 @@ async function bulkAddIMSAPI(data){
 
 
 // ========================================
-// FORMAT IMS DATA
+// FORMAT IMS
 // ========================================
 
 
@@ -948,93 +846,45 @@ function formatIMS(data){
 
 
 
+        id:
+
+        data.id || "",
+
+
+
         wo:
 
-
-        String(
-
-            data.wo ||
-
-            ""
-
-        ).trim(),
-
-
-
+        data.wo || "",
 
 
 
         reference_code:
 
-
-        String(
-
-            data.reference_code ||
-
-            ""
-
-        ).trim(),
-
-
-
+        data.reference_code || "",
 
 
 
         quotation:
 
-
-        String(
-
-            data.quotation ||
-
-            ""
-
-        ).trim(),
-
-
-
+        data.quotation || "",
 
 
 
         job_name:
 
-
-        String(
-
-            data.job_name ||
-
-            ""
-
-        ).trim(),
-
-
-
+        data.job_name || "",
 
 
 
         status:
 
-
-        data.status ||
-
-        "Progress",
-
-
-
+        data.status || "Progress",
 
 
 
         bulan:
 
-
-        String(
-
-            data.bulan ||
-
-            ""
-
-        ).trim()
-
+        data.bulan || ""
 
 
 
@@ -1053,46 +903,11 @@ function formatIMS(data){
 
 
 // ========================================
-// VALIDATE IMS
+// IMS CACHE
 // ========================================
 
 
-function validateIMS(data){
-
-
-
-    if(!data.wo){
-
-
-
-        throw new Error(
-
-        "WO wajib diisi"
-
-        );
-
-
-
-    }
-
-
-
-
-
-
-    if(!data.reference_code){
-
-
-
-        throw new Error(
-
-        "Reference Code wajib diisi"
-
-        );
-
-
-
-    }
+let IMS_CACHE=[];
 
 
 
@@ -1100,7 +915,19 @@ function validateIMS(data){
 
 
 
-    return true;
+
+
+async function loadIMSCache(){
+
+
+
+    IMS_CACHE =
+
+    await getIMS();
+
+
+
+    return IMS_CACHE;
 
 
 
@@ -1115,37 +942,23 @@ function validateIMS(data){
 
 
 // ========================================
-// SAVE IMS AUTO
+// FIND IMS
 // ========================================
 
 
-async function saveIMSData(data){
+function findIMS(reference_code){
 
 
 
-    let cleanData =
-
-
-    formatIMS(data);
+    return IMS_CACHE.find(item=>
 
 
 
+        item.reference_code ===
+
+        reference_code
 
 
-
-
-    validateIMS(cleanData);
-
-
-
-
-
-
-
-
-    return await addIMSAPI(
-
-        cleanData
 
     );
 
@@ -1162,258 +975,28 @@ async function saveIMSData(data){
 
 
 // ========================================
-// DELETE MULTIPLE IMS
+// REALTIME IMS
 // ========================================
 
 
-async function deleteMultipleIMS(ids){
+async function realtimeIMS(){
 
 
 
-    let result=[];
-
-
-
-
-
-    for(let id of ids){
-
-
-
-        let response =
-
-
-        await deleteIMSAPI(id);
-
-
-
-
-
-        result.push(response);
-
-
-
-    }
-
-
-
-
-
-    return result;
+    return await getIMS();
 
 
 
 }
 
 // ========================================
-// REALTIME SYNC HELPER
+// MASTER MONITORING MODULE
+// OSS VS IMS
 // ========================================
 
 
 
-let apiRefreshTimer = null;
-
-
-
-
-
-
-
-// ========================================
-// START AUTO REFRESH
-// ========================================
-
-
-function startAPIAutoRefresh(callback,delay=30000){
-
-
-
-    stopAPIAutoRefresh();
-
-
-
-
-
-    apiRefreshTimer = setInterval(async()=>{
-
-
-
-        try{
-
-
-
-            if(callback){
-
-
-
-                await callback();
-
-
-
-            }
-
-
-
-        }
-
-
-
-        catch(error){
-
-
-
-            console.error(
-
-            "Realtime Error",
-
-            error
-
-            );
-
-
-
-        }
-
-
-
-
-    },delay);
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ========================================
-// STOP AUTO REFRESH
-// ========================================
-
-
-function stopAPIAutoRefresh(){
-
-
-
-    if(apiRefreshTimer){
-
-
-
-        clearInterval(
-
-            apiRefreshTimer
-
-        );
-
-
-
-        apiRefreshTimer=null;
-
-
-
-    }
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ========================================
-// TEST CONNECTION
-// ========================================
-
-
-async function testConnection(){
-
-
-
-    try{
-
-
-
-        let result =
-
-
-        await safeRequest(
-
-            "test"
-
-        );
-
-
-
-
-
-        if(result.success){
-
-
-
-            console.log(
-
-            "GOOGLE SHEET ONLINE"
-
-            );
-
-
-
-            return true;
-
-
-
-        }
-
-
-
-
-
-        return false;
-
-
-
-
-    }
-
-
-
-    catch(error){
-
-
-
-        console.error(
-
-        "Connection Failed",
-
-        error
-
-        );
-
-
-
-        return false;
-
-
-
-    }
-
-
-
-}
-
-
-
-
+let MASTER_CACHE=[];
 
 
 
@@ -1421,7 +1004,6 @@ async function testConnection(){
 
 // ========================================
 // GET MASTER DATA
-// OSS VS IMS
 // ========================================
 
 
@@ -1429,11 +1011,18 @@ async function getMasterData(){
 
 
 
-    let oss = await getOSS();
+    const oss =
+
+    await getOSS();
 
 
 
-    let ims = await getIMS();
+
+
+    const ims =
+
+    await getIMS();
+
 
 
 
@@ -1445,16 +1034,20 @@ async function getMasterData(){
 
 
 
+
     oss.forEach(itemOSS=>{
 
 
 
-        let itemIMS = ims.find(item=>
+        let itemIMS =
+
+        ims.find(item=>
 
 
             item.reference_code ===
 
             itemOSS.reference_code
+
 
 
         );
@@ -1464,7 +1057,17 @@ async function getMasterData(){
 
 
 
-        let row={
+
+
+        let data={
+
+
+
+
+            id:
+
+            itemOSS.id || "",
+
 
 
 
@@ -1472,24 +1075,29 @@ async function getMasterData(){
 
 
 
-            reference_code:
 
+
+            reference_code:
 
             itemOSS.reference_code,
 
 
 
-            customer:
 
+
+            customer:
 
             itemOSS.customer,
 
 
 
+
+
             city:
 
-
             itemOSS.city,
+
+
 
 
 
@@ -1497,7 +1105,11 @@ async function getMasterData(){
 
 
 
+
+
             job_name:"-",
+
+
 
 
 
@@ -1505,7 +1117,10 @@ async function getMasterData(){
 
 
 
+
+
             note:""
+
 
 
 
@@ -1519,19 +1134,20 @@ async function getMasterData(){
 
 
 
+
         if(!itemIMS){
 
 
 
-            row.status =
+            data.status =
 
             "🔴 Belum IMS";
 
 
 
-            row.note =
+            data.note =
 
-            "Reference Code belum ada di IMS";
+            "Reference Code belum masuk IMS";
 
 
 
@@ -1540,26 +1156,26 @@ async function getMasterData(){
 
 
 
-
         else{
 
 
 
-            row.wo =
+            data.wo =
 
-            itemIMS.wo;
-
-
-
-            row.bulan =
-
-            itemIMS.bulan;
+            itemIMS.wo || "-";
 
 
 
-            row.job_name =
+            data.bulan =
 
-            itemIMS.job_name;
+            itemIMS.bulan || "-";
+
+
+
+            data.job_name =
+
+            itemIMS.job_name || "-";
+
 
 
 
@@ -1569,20 +1185,16 @@ async function getMasterData(){
 
 
 
-                [
-
-                    "Approved",
-
-                    "Booked",
-
-                    "Closed",
-
-                    "Ready to Invoice"
+                itemIMS.status==="Approved" ||
 
 
-                ]
+                itemIMS.status==="Booked" ||
 
-                .includes(itemIMS.status)
+
+                itemIMS.status==="Closed" ||
+
+
+                itemIMS.status==="Ready to Invoice"
 
 
 
@@ -1590,7 +1202,7 @@ async function getMasterData(){
 
 
 
-                row.status =
+                data.status =
 
                 "🟢 Sudah";
 
@@ -1600,20 +1212,21 @@ async function getMasterData(){
 
 
 
+            else if(
+
+                itemIMS.status==="Revisi"
+
+            ){
 
 
 
-            else if(itemIMS.status==="Revisi"){
-
-
-
-                row.status =
+                data.status =
 
                 "🟡 Revisi";
 
 
 
-                row.note =
+                data.note =
 
                 "Perlu revisi";
 
@@ -1623,13 +1236,11 @@ async function getMasterData(){
 
 
 
-
-
             else{
 
 
 
-                row.status =
+                data.status =
 
                 "🔵 Progress";
 
@@ -1647,9 +1258,7 @@ async function getMasterData(){
 
 
 
-        master.push(row);
-
-
+        master.push(data);
 
 
 
@@ -1659,6 +1268,10 @@ async function getMasterData(){
 
 
 
+
+
+
+    MASTER_CACHE = master;
 
 
 
@@ -1677,81 +1290,72 @@ async function getMasterData(){
 
 
 // ========================================
-// DATE FORMAT
+// DASHBOARD SUMMARY
 // ========================================
 
 
-function formatDate(date=new Date()){
+async function getDashboard(){
 
 
 
-    return date.toLocaleString(
+    const master =
 
-        "id-ID",
-
-        {
+    await getMasterData();
 
 
-            day:"2-digit",
 
 
-            month:"2-digit",
+
+    let result={
 
 
-            year:"numeric",
+
+        totalOSS:
+
+        master.length,
 
 
-            hour:"2-digit",
+
+        totalIMS:
+
+        master.filter(item=>
+
+            item.status !==
+
+            "🔴 Belum IMS"
 
 
-            minute:"2-digit"
+        ).length,
+
+
+
+        totalMaster:
+
+        master.length,
+
+
+
+        status:{
+
+
+
+            sudah:0,
+
+
+
+            progress:0,
+
+
+
+            revisi:0,
+
+
+
+            belum:0
 
 
 
         }
-
-
-    );
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ========================================
-// API STATUS
-// ========================================
-
-
-async function apiStatus(){
-
-
-
-    let online =
-
-
-    await testConnection();
-
-
-
-
-
-    return {
-
-
-
-        online:online,
-
-
-
-        time:formatDate()
 
 
 
@@ -1759,6 +1363,69 @@ async function apiStatus(){
 
 
 
+
+
+
+
+    master.forEach(item=>{
+
+
+
+
+
+        if(item.status.includes("Sudah")){
+
+
+            result.status.sudah++;
+
+
+        }
+
+
+
+        else if(item.status.includes("Progress")){
+
+
+            result.status.progress++;
+
+
+        }
+
+
+
+        else if(item.status.includes("Revisi")){
+
+
+            result.status.revisi++;
+
+
+        }
+
+
+
+        else if(item.status.includes("Belum")){
+
+
+            result.status.belum++;
+
+
+        }
+
+
+
+    });
+
+
+
+
+
+
+
+
+    return result;
+
+
+
 }
 
 
@@ -1770,24 +1437,145 @@ async function apiStatus(){
 
 
 // ========================================
-// INITIAL CHECK
+// REALTIME AUTO REFRESH
 // ========================================
 
 
-document.addEventListener(
-
-"DOMContentLoaded",
-
-()=>{
+let realtimeTimer=null;
 
 
 
-    console.log(
-
-    "API MODULE READY"
-
-    );
 
 
 
-});
+
+
+
+function startRealtime(callback,delay=30000){
+
+
+
+    stopRealtime();
+
+
+
+
+
+
+    realtimeTimer =
+
+    setInterval(async()=>{
+
+
+
+        if(callback){
+
+
+
+            await callback();
+
+
+
+        }
+
+
+
+    },delay);
+
+
+
+}
+
+
+
+
+
+
+
+
+
+function stopRealtime(){
+
+
+
+    if(realtimeTimer){
+
+
+
+        clearInterval(
+
+            realtimeTimer
+
+        );
+
+
+
+        realtimeTimer=null;
+
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// REFRESH ALL DATA
+// ========================================
+
+
+async function refreshAll(){
+
+
+
+    OSS_CACHE=[];
+
+    IMS_CACHE=[];
+
+    MASTER_CACHE=[];
+
+
+
+
+
+    await loadOSSCache();
+
+
+
+    await loadIMSCache();
+
+
+
+    return await getMasterData();
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// API READY
+// ========================================
+
+
+console.log(
+
+"API FULL MODULE READY"
+
+);
