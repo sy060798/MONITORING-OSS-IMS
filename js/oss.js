@@ -1369,3 +1369,42 @@ document.addEventListener(
 
 
 });
+
+// ========================================
+// EXCEL UPLOAD CONNECTOR OSS
+// ========================================
+
+
+function uploadOSS(){
+
+
+    if(typeof uploadOSSExcel === "function"){
+
+
+        return uploadOSSExcel();
+
+
+    }
+
+
+    else{
+
+
+        console.error(
+
+            "uploadOSSExcel tidak ditemukan"
+
+        );
+
+
+        alert(
+
+            "Module Excel OSS belum aktif"
+
+        );
+
+
+    }
+
+
+}
