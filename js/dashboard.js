@@ -1,9 +1,8 @@
 // ========================================
-// DASHBOARD JS V4
+// DASHBOARD JS V4 FINAL SYNC API V4
 // OSS IMS MONITORING SYSTEM
-// API.JS V3 FINAL COMPATIBLE
 // PART 1
-// CORE + DATA LOADER
+// CORE + DASHBOARD LOADER
 // ========================================
 
 
@@ -19,7 +18,7 @@ let STATUS_CHART = null;
 
 let DASHBOARD_READY = false;
 
-
+let API_RESPONSE_TIME = 0;
 
 
 
@@ -28,7 +27,6 @@ let DASHBOARD_READY = false;
 // ========================================
 // LOAD DASHBOARD
 // ========================================
-
 
 async function loadDashboard(){
 
@@ -40,46 +38,68 @@ async function loadDashboard(){
 
 
 
-        let apiResult = await getDashboardAPI();
+        let startTime =
+        performance.now();
 
 
 
-        if(!apiResult){
 
-            apiResult={};
+        let result =
+        await getDashboardAPI();
+
+
+
+
+        let endTime =
+        performance.now();
+
+
+
+        API_RESPONSE_TIME =
+        Math.round(
+            endTime - startTime
+        );
+
+
+
+
+        if(
+            result &&
+            result.success
+        ){
+
+
+            DASHBOARD_DATA =
+            result.data || {};
+
+
+
+        }
+
+        else{
+
+
+            DASHBOARD_DATA = {};
+
+
 
         }
 
 
 
 
-        DASHBOARD_DATA = apiResult;
 
 
-
-
-        // fallback jika dashboard API kosong
+        // FALLBACK HITUNG DARI CACHE
 
         if(
-
-            !DASHBOARD_DATA.totalOSS
-
-            &&
-
-            typeof getAllOSS==="function"
-
+            !DASHBOARD_DATA.totalOSS &&
+            typeof OSS_CACHE !== "undefined"
         ){
-
-
-
-            let oss = await getAllOSS();
-
 
 
             DASHBOARD_DATA.totalOSS =
-
-            oss.length;
-
+            OSS_CACHE.length;
 
 
         }
@@ -88,64 +108,44 @@ async function loadDashboard(){
 
 
 
-
-
         if(
-
-            !DASHBOARD_DATA.totalIMS
-
-            &&
-
-            typeof getAllIMS==="function"
-
+            !DASHBOARD_DATA.totalIMS &&
+            typeof IMS_CACHE !== "undefined"
         ){
 
 
-
-            let ims = await getAllIMS();
-
-
-
             DASHBOARD_DATA.totalIMS =
-
-            ims.length;
-
+            IMS_CACHE.length;
 
 
 
             DASHBOARD_DATA.progress =
 
-            ims.filter(x=>
+            IMS_CACHE.filter(item=>
 
-                x.status==="Progress"
+                item.status==="Progress"
 
             ).length;
-
-
 
 
 
             DASHBOARD_DATA.revisi =
 
-            ims.filter(x=>
+            IMS_CACHE.filter(item=>
 
-                x.status==="Revisi"
+                item.status==="Revisi"
 
             ).length;
 
 
 
-
-
             DASHBOARD_DATA.selesai =
 
-            ims.filter(x=>
+            IMS_CACHE.filter(item=>
 
-                x.status==="Closed"
-
+                item.status==="Done"
                 ||
-
-                x.status==="Done"
+                item.status==="Closed"
 
             ).length;
 
@@ -170,7 +170,7 @@ async function loadDashboard(){
 
 
 
-        updateLastUpdate();
+        updateSystemMonitor();
 
 
 
@@ -181,19 +181,16 @@ async function loadDashboard(){
     }
 
 
-
     catch(error){
-
 
 
         console.error(
 
-            "DASHBOARD LOAD ERROR",
+            "LOAD DASHBOARD ERROR",
 
             error
 
         );
-
 
 
         updateAPIStatus(false);
@@ -201,7 +198,6 @@ async function loadDashboard(){
 
 
     }
-
 
 
     finally{
@@ -223,9 +219,8 @@ async function loadDashboard(){
 
 
 
-
 // ========================================
-// RENDER CARD
+// RENDER DASHBOARD CARD
 // ========================================
 
 
@@ -277,15 +272,13 @@ function renderDashboard(){
 
 
 
-
     setDashboardValue(
 
-        "done",
+        "selesai",
 
         DASHBOARD_DATA.selesai || 0
 
     );
-
 
 
 
@@ -301,7 +294,6 @@ function renderDashboard(){
 
 
 
-
     setDashboardValue(
 
         "revisi",
@@ -312,18 +304,6 @@ function renderDashboard(){
 
 
 
-
-
-    setDashboardValue(
-
-        "belum",
-
-        DASHBOARD_DATA.belumIMS || 0
-
-    );
-
-
-
 }
 
 
@@ -333,34 +313,86 @@ function renderDashboard(){
 
 
 
-
 // ========================================
-// SET TEXT
+// SET VALUE HELPER
 // ========================================
 
 
-function setDashboardValue(id,value){
+function setDashboardValue(
+    id,
+    value
+){
 
 
-
-    let el = document.getElementById(id);
+    const el =
+    document.getElementById(id);
 
 
 
     if(el){
 
 
-
-        el.innerText=value;
-
+        el.innerText =
+        value ?? 0;
 
 
     }
 
 
-
 }
 
+
+
+
+
+
+
+
+// ========================================
+// LOADING STATUS
+// ========================================
+
+
+function dashboardLoading(state){
+
+
+
+    const el =
+    document.getElementById(
+        "dashboardStatus"
+    );
+
+
+
+    if(!el){
+
+        return;
+
+    }
+
+
+
+
+    if(state){
+
+
+        el.innerText =
+        "⏳ Loading...";
+
+
+    }
+
+    else{
+
+
+        el.innerText =
+        "🟢 Realtime";
+
+
+    }
+
+
+}
 
 
 
@@ -370,17 +402,14 @@ function setDashboardValue(id,value){
 
 
 console.log(
-
 "DASHBOARD JS V4 PART 1 READY"
-
 );
 
 // ========================================
-// DASHBOARD JS V4
+// DASHBOARD JS V4 FINAL SYNC API V4
 // OSS IMS MONITORING SYSTEM
-// API.JS V3 FINAL COMPATIBLE
 // PART 2
-// CHART + STATUS MONITOR
+// CHART + SYSTEM MONITOR
 // ========================================
 
 
@@ -393,12 +422,10 @@ function renderStatusChart(){
 
 
 
-    let canvas = document.getElementById(
-
+    const canvas =
+    document.getElementById(
         "statusChart"
-
     );
-
 
 
 
@@ -411,24 +438,19 @@ function renderStatusChart(){
 
 
 
-
-
-    if(typeof Chart==="undefined"){
-
+    if(
+        typeof Chart === "undefined"
+    ){
 
 
         console.warn(
-
-        "Chart JS belum aktif"
-
+            "Chart.js belum aktif"
         );
 
 
         return;
 
-
     }
-
 
 
 
@@ -437,14 +459,54 @@ function renderStatusChart(){
     if(STATUS_CHART){
 
 
-
         STATUS_CHART.destroy();
 
+
+        STATUS_CHART=null;
 
 
     }
 
 
+
+
+
+
+    let chartData=[
+
+
+        DASHBOARD_DATA.selesai || 0,
+
+
+        DASHBOARD_DATA.progress || 0,
+
+
+        DASHBOARD_DATA.revisi || 0,
+
+
+        DASHBOARD_DATA.belumIMS || 0
+
+
+    ];
+
+
+
+
+
+
+    // jika semua kosong
+
+    if(
+        chartData.every(
+            x=>x===0
+        )
+    ){
+
+
+        chartData=[1,0,0,0];
+
+
+    }
 
 
 
@@ -454,26 +516,20 @@ function renderStatusChart(){
     STATUS_CHART = new Chart(
 
 
-
         canvas,
 
 
-
         {
-
 
 
         type:"doughnut",
 
 
 
-
         data:{
 
 
-
             labels:[
-
 
 
                 "Selesai",
@@ -488,66 +544,33 @@ function renderStatusChart(){
                 "Belum IMS"
 
 
-
             ],
-
-
 
 
 
             datasets:[{
 
 
-
-
-                data:[
-
-
-
-                    DASHBOARD_DATA.selesai || 0,
-
-
-
-                    DASHBOARD_DATA.progress || 0,
-
-
-
-                    DASHBOARD_DATA.revisi || 0,
-
-
-
-                    DASHBOARD_DATA.belumIMS || 0
-
-
-
-                ],
-
-
+                data:chartData,
 
 
 
                 backgroundColor:[
 
 
-
                     "#16a34a",
-
 
 
                     "#2563eb",
 
 
-
                     "#eab308",
-
 
 
                     "#dc2626"
 
 
-
                 ],
-
 
 
 
@@ -555,9 +578,7 @@ function renderStatusChart(){
 
 
 
-
             }]
-
 
 
 
@@ -566,44 +587,32 @@ function renderStatusChart(){
 
 
 
-
-
         options:{
-
 
 
             responsive:true,
 
 
-
             maintainAspectRatio:false,
-
 
 
             cutout:"65%",
 
 
 
-
             plugins:{
-
 
 
                 legend:{
 
 
-
                     position:"bottom"
-
 
 
                 }
 
 
-
-
             }
-
 
 
 
@@ -611,80 +620,7 @@ function renderStatusChart(){
 
 
 
-
-
-    );
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-// ========================================
-// STATUS SUMMARY
-// ========================================
-
-
-function getDashboardSummary(){
-
-
-
-    return {
-
-
-
-        totalOSS:
-
-        DASHBOARD_DATA.totalOSS || 0,
-
-
-
-        totalIMS:
-
-        DASHBOARD_DATA.totalIMS || 0,
-
-
-
-        totalMaster:
-
-        DASHBOARD_DATA.totalMaster || 0,
-
-
-
-        selesai:
-
-        DASHBOARD_DATA.selesai || 0,
-
-
-
-        progress:
-
-        DASHBOARD_DATA.progress || 0,
-
-
-
-        revisi:
-
-        DASHBOARD_DATA.revisi || 0,
-
-
-
-        belum:
-
-        DASHBOARD_DATA.belumIMS || 0
-
-
-
-    };
+    });
 
 
 
@@ -707,13 +643,206 @@ function updateAPIStatus(status){
 
 
 
-    let el = document.getElementById(
-
+    const el =
+    document.getElementById(
         "apiStatus"
-
     );
 
 
+
+    if(!el){
+
+        return;
+
+    }
+
+
+
+
+
+    if(status){
+
+
+        el.innerHTML =
+        "🟢 Online";
+
+
+    }
+
+    else{
+
+
+        el.innerHTML =
+        "🔴 Offline";
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// UPDATE SYSTEM MONITOR
+// ========================================
+
+
+function updateSystemMonitor(){
+
+
+
+    const last =
+    document.getElementById(
+        "lastUpdate"
+    );
+
+
+
+    if(last){
+
+
+        last.innerText =
+
+        new Date()
+
+        .toLocaleString(
+            "id-ID"
+        );
+
+
+    }
+
+
+
+
+
+
+
+    const speed =
+    document.getElementById(
+        "apiSpeed"
+    );
+
+
+
+    if(speed){
+
+
+
+        speed.innerText =
+
+        API_RESPONSE_TIME
+
+        +" ms";
+
+
+
+    }
+
+
+
+
+
+
+
+    const cache =
+    document.getElementById(
+        "cacheStatus"
+    );
+
+
+
+    if(cache){
+
+
+
+        let total=0;
+
+
+
+
+        if(
+            typeof OSS_CACHE !== "undefined"
+        ){
+
+
+            total +=
+            OSS_CACHE.length;
+
+
+        }
+
+
+
+
+
+        if(
+            typeof IMS_CACHE !== "undefined"
+        ){
+
+
+            total +=
+            IMS_CACHE.length;
+
+
+        }
+
+
+
+
+
+
+        cache.innerText =
+
+        total +
+
+        " Records";
+
+
+
+    }
+
+
+
+
+
+
+
+    updateSystemHealth();
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// SYSTEM HEALTH
+// ========================================
+
+
+function updateSystemHealth(){
+
+
+
+    const el =
+    document.getElementById(
+        "systemHealth"
+    );
 
 
 
@@ -728,25 +857,56 @@ function updateAPIStatus(status){
 
 
 
-    if(status){
+
+    if(API_RESPONSE_TIME < 300){
 
 
 
         el.innerHTML =
 
-        "🟢 Online";
+        "🟢 Stable";
+
+
+
+        el.className =
+        "health-ok";
 
 
 
     }
 
-    else{
+
+    else if(
+        API_RESPONSE_TIME < 1000
+    ){
 
 
 
         el.innerHTML =
 
-        "🔴 Offline";
+        "🟡 Normal";
+
+
+
+        el.className =
+        "health-warning";
+
+
+
+    }
+
+
+    else{
+
+
+        el.innerHTML =
+
+        "🔴 Slow";
+
+
+
+        el.className =
+        "health-error";
 
 
 
@@ -773,118 +933,29 @@ function updateLastUpdate(){
 
 
 
-    setDashboardValue(
+    const el =
+    document.getElementById(
+        "lastUpdate"
+    );
 
 
-        "lastUpdate",
+
+    if(el){
 
 
+        el.innerText =
 
         new Date()
 
         .toLocaleString(
-
             "id-ID"
-
-        )
-
-
-
-    );
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ========================================
-// LOADING STATUS
-// ========================================
-
-
-function dashboardLoading(state){
-
-
-
-    let el = document.getElementById(
-
-        "dashboardStatus"
-
-    );
-
-
-
-
-
-    if(!el){
-
-        return;
-
-    }
-
-
-
-
-
-
-    if(state){
-
-
-
-        el.innerText=
-
-        "⏳ Loading...";
-
-
-
-    }
-
-    else{
-
-
-
-        el.innerText=
-
-        "🟢 Realtime";
-
+        );
 
 
     }
 
 
-
 }
-
-
-
-
-
-
-
-
-
-// ========================================
-// MANUAL REFRESH
-// ========================================
-
-
-async function refreshDashboard(){
-
-
-
-    await loadDashboard();
-
-
-
-}
-
 
 
 
@@ -894,36 +965,32 @@ async function refreshDashboard(){
 
 
 console.log(
-
 "DASHBOARD JS V4 PART 2 READY"
-
 );
 
 // ========================================
-// DASHBOARD JS V4
+// DASHBOARD JS V4 FINAL SYNC API V4
 // OSS IMS MONITORING SYSTEM
-// API.JS V3 FINAL COMPATIBLE
 // PART 3
-// REALTIME + FILTER + EXPORT
+// REFRESH + REALTIME + EXPORT + TOAST
 // ========================================
 
 
 // ========================================
-// REALTIME SYSTEM
+// START REALTIME
 // ========================================
 
 
-function startDashboardRealtime(delay=60000){
-
+function startDashboardRealtime(
+    delay=60000
+){
 
 
     stopDashboardRealtime();
 
 
 
-
-    DASHBOARD_TIMER=setInterval(()=>{
-
+    DASHBOARD_TIMER = setInterval(()=>{
 
 
         loadDashboard();
@@ -956,16 +1023,136 @@ function stopDashboardRealtime(){
     if(DASHBOARD_TIMER){
 
 
-
         clearInterval(
-
             DASHBOARD_TIMER
+        );
+
+
+        DASHBOARD_TIMER=null;
+
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// SAFE REFRESH BUTTON
+// ========================================
+
+
+async function safeRefresh(){
+
+
+
+    const btn =
+    document.querySelector(
+        ".btn-refresh"
+    );
+
+
+
+    try{
+
+
+        if(btn){
+
+
+            btn.disabled=true;
+
+
+        }
+
+
+
+
+
+
+        showDashboardToast(
+            "Memperbarui data..."
+        );
+
+
+
+
+
+        if(
+            typeof refreshAllData==="function"
+        ){
+
+
+            await refreshAllData();
+
+
+
+        }
+
+
+
+
+
+
+        await loadDashboard();
+
+
+
+
+
+
+        showDashboardToast(
+            "Data berhasil diperbarui"
+        );
+
+
+
+    }
+
+
+    catch(error){
+
+
+
+        console.error(
+
+            "REFRESH ERROR",
+
+            error
 
         );
 
 
 
-        DASHBOARD_TIMER=null;
+        showDashboardToast(
+
+            "Gagal refresh data"
+
+        );
+
+
+
+    }
+
+
+    finally{
+
+
+
+        if(btn){
+
+
+            btn.disabled=false;
+
+
+        }
 
 
 
@@ -984,7 +1171,7 @@ function stopDashboardRealtime(){
 
 
 // ========================================
-// FORCE SYNC ALL DATA
+// SYNC FULL SYSTEM
 // ========================================
 
 
@@ -995,8 +1182,17 @@ async function syncDashboard(){
     try{
 
 
+        showDashboardToast(
+            "Sinkronisasi sistem..."
+        );
 
-        if(typeof refreshAllData==="function"){
+
+
+
+
+        if(
+            typeof refreshAllData==="function"
+        ){
 
 
 
@@ -1009,27 +1205,19 @@ async function syncDashboard(){
 
 
 
+
+
         await loadDashboard();
 
 
 
-
-        if(typeof loadMaster==="function"){
-
-
-
-            await loadMaster();
-
-
-
-        }
 
 
 
 
         showDashboardToast(
 
-            "Dashboard berhasil diperbarui"
+            "Sinkronisasi selesai"
 
         );
 
@@ -1045,12 +1233,19 @@ async function syncDashboard(){
 
         console.error(
 
-            "SYNC DASHBOARD ERROR",
+            "SYNC ERROR",
 
             error
 
         );
 
+
+
+        showDashboardToast(
+
+            "Sinkronisasi gagal"
+
+        );
 
 
     }
@@ -1076,10 +1271,10 @@ function searchDashboard(keyword){
 
 
 
-    keyword = String(keyword || "")
-
+    keyword = String(
+        keyword || ""
+    )
     .toLowerCase();
-
 
 
 
@@ -1091,21 +1286,22 @@ function searchDashboard(keyword){
 
 
 
-    if(typeof MASTER_CACHE!=="undefined"){
+    if(
+        typeof MASTER_CACHE !== "undefined"
+    ){
 
 
 
         result = MASTER_CACHE.filter(item=>{
 
 
+
             return (
 
-
-
-                String(item.reference_code || "")
-
+                String(
+                    item.reference_code || ""
+                )
                 .toLowerCase()
-
                 .includes(keyword)
 
 
@@ -1114,10 +1310,10 @@ function searchDashboard(keyword){
 
 
 
-                String(item.customer || "")
-
+                String(
+                    item.customer || ""
+                )
                 .toLowerCase()
-
                 .includes(keyword)
 
 
@@ -1126,10 +1322,10 @@ function searchDashboard(keyword){
 
 
 
-                String(item.city || "")
-
+                String(
+                    item.city || ""
+                )
                 .toLowerCase()
-
                 .includes(keyword)
 
 
@@ -1149,13 +1345,12 @@ function searchDashboard(keyword){
 
 
 
-
-    if(typeof renderMaster==="function"){
-
+    if(
+        typeof renderMaster==="function"
+    ){
 
 
         renderMaster(result);
-
 
 
     }
@@ -1173,7 +1368,7 @@ function searchDashboard(keyword){
 
 
 // ========================================
-// EXPORT DASHBOARD REPORT
+// EXPORT DASHBOARD
 // ========================================
 
 
@@ -1181,20 +1376,17 @@ function exportDashboardExcel(){
 
 
 
-    if(typeof XLSX==="undefined"){
-
+    if(
+        typeof XLSX==="undefined"
+    ){
 
 
         alert(
-
-        "Excel library belum aktif"
-
+            "Library Excel belum aktif"
         );
 
 
-
         return;
-
 
 
     }
@@ -1204,49 +1396,34 @@ function exportDashboardExcel(){
 
 
 
-    let summary=[{
-
+    let data=[{
 
         Total_OSS:
-
         DASHBOARD_DATA.totalOSS || 0,
 
 
-
         Total_IMS:
-
         DASHBOARD_DATA.totalIMS || 0,
 
 
-
         Total_Master:
-
         DASHBOARD_DATA.totalMaster || 0,
 
 
-
         Selesai:
-
         DASHBOARD_DATA.selesai || 0,
 
 
-
         Progress:
-
         DASHBOARD_DATA.progress || 0,
 
 
-
         Revisi:
-
         DASHBOARD_DATA.revisi || 0,
 
 
-
         Belum_IMS:
-
         DASHBOARD_DATA.belumIMS || 0
-
 
 
     }];
@@ -1257,18 +1434,15 @@ function exportDashboardExcel(){
 
 
 
-    let ws = XLSX.utils.json_to_sheet(
-
-        summary
-
+    let ws =
+    XLSX.utils.json_to_sheet(
+        data
     );
 
 
 
-
-
-    let wb = XLSX.utils.book_new();
-
+    let wb =
+    XLSX.utils.book_new();
 
 
 
@@ -1309,21 +1483,20 @@ function exportDashboardExcel(){
 
 
 // ========================================
-// TOAST MESSAGE
+// TOAST
 // ========================================
 
 
-function showDashboardToast(message){
+function showDashboardToast(
+    message
+){
 
 
 
-    let el=document.getElementById(
-
+    const el =
+    document.getElementById(
         "toast"
-
     );
-
-
 
 
 
@@ -1337,12 +1510,14 @@ function showDashboardToast(message){
 
 
 
+    el.innerText =
+    message;
 
-    el.innerText=message;
 
 
+    el.style.display =
+    "block";
 
-    el.style.display="block";
 
 
 
@@ -1352,8 +1527,8 @@ function showDashboardToast(message){
     setTimeout(()=>{
 
 
-
-        el.style.display="none";
+        el.style.display =
+        "none";
 
 
 
@@ -1370,42 +1545,18 @@ function showDashboardToast(message){
 
 
 
-
 // ========================================
-// CLEANUP
+// PRINT
 // ========================================
 
 
-window.addEventListener(
-
-"beforeunload",
-
-()=>{
+function printDashboard(){
 
 
-
-    stopDashboardRealtime();
-
+    window.print();
 
 
-
-    if(STATUS_CHART){
-
-
-
-        STATUS_CHART.destroy();
-
-
-
-        STATUS_CHART=null;
-
-
-
-    }
-
-
-
-});
+}
 
 
 
@@ -1416,30 +1567,26 @@ window.addEventListener(
 
 
 console.log(
-
 "DASHBOARD JS V4 PART 3 READY"
-
 );
+
 // ========================================
-// DASHBOARD JS V4
+// DASHBOARD JS V4 FINAL SYNC API V4
 // OSS IMS MONITORING SYSTEM
-// API.JS V3 FINAL COMPATIBLE
 // PART 4
-// FINAL INIT + AUTO LOAD SYSTEM
+// INIT SYSTEM + EVENT + CLEANUP
 // ========================================
 
 
 // ========================================
-// SAFE LOAD DASHBOARD
+// SAFE LOAD
 // ========================================
 
 
 async function safeLoadDashboard(){
 
 
-
     try{
-
 
 
         await loadDashboard();
@@ -1449,14 +1596,13 @@ async function safeLoadDashboard(){
     }
 
 
-
     catch(error){
 
 
 
         console.error(
 
-            "SAFE DASHBOARD ERROR",
+            "SAFE LOAD DASHBOARD ERROR",
 
             error
 
@@ -1483,7 +1629,7 @@ async function safeLoadDashboard(){
 
 
 // ========================================
-// LOAD FULL SYSTEM
+// INIT DASHBOARD SYSTEM
 // ========================================
 
 
@@ -1494,11 +1640,8 @@ async function initDashboardSystem(){
     try{
 
 
-
         console.log(
-
-        "START DASHBOARD SYSTEM"
-
+            "START DASHBOARD SYSTEM"
         );
 
 
@@ -1506,15 +1649,42 @@ async function initDashboardSystem(){
 
 
 
-        // cek koneksi API
+        // TEST CONNECTION API
 
 
+        if(
+            typeof testConnection==="function"
+        ){
 
-        if(typeof testConnection==="function"){
 
-
+            let test =
 
             await testConnection();
+
+
+
+
+            if(
+                test &&
+                test.success
+            ){
+
+
+
+                updateAPIStatus(true);
+
+
+
+            }
+
+
+            else{
+
+
+                updateAPIStatus(false);
+
+
+            }
 
 
 
@@ -1526,25 +1696,14 @@ async function initDashboardSystem(){
 
 
 
-        // load dashboard utama
 
 
-
-        await loadDashboard();
-
+        // LOAD CACHE DATA
 
 
-
-
-
-
-
-        // refresh module cache
-
-
-
-        if(typeof refreshAllData==="function"){
-
+        if(
+            typeof refreshAllData==="function"
+        ){
 
 
             await refreshAllData();
@@ -1560,8 +1719,8 @@ async function initDashboardSystem(){
 
 
 
-        // load ulang dashboard
 
+        // LOAD DASHBOARD
 
 
         await loadDashboard();
@@ -1573,10 +1732,12 @@ async function initDashboardSystem(){
 
 
 
+
+        // START REALTIME
+
+
         startDashboardRealtime(
-
             60000
-
         );
 
 
@@ -1592,19 +1753,15 @@ async function initDashboardSystem(){
 
 
 
-
-
         console.log(
 
-        "DASHBOARD SYSTEM READY"
+            "DASHBOARD SYSTEM READY"
 
         );
 
 
 
-
     }
-
 
 
     catch(error){
@@ -1613,9 +1770,9 @@ async function initDashboardSystem(){
 
         console.error(
 
-        "DASHBOARD INIT ERROR",
+            "DASHBOARD INIT ERROR",
 
-        error
+            error
 
         );
 
@@ -1640,7 +1797,7 @@ async function initDashboardSystem(){
 
 
 // ========================================
-// GET QUICK STATISTIC
+// QUICK STATISTIC
 // ========================================
 
 
@@ -1648,8 +1805,7 @@ function dashboardStatistic(){
 
 
 
-    let data = {
-
+    return {
 
 
         OSS:
@@ -1692,10 +1848,6 @@ function dashboardStatistic(){
 
 
 
-    return data;
-
-
-
 }
 
 
@@ -1707,7 +1859,7 @@ function dashboardStatistic(){
 
 
 // ========================================
-// AUTO REFRESH BUTTON
+// AUTO REFRESH
 // ========================================
 
 
@@ -1730,30 +1882,8 @@ function autoRefreshDashboard(){
 
 
 // ========================================
-// PRINT DASHBOARD
-// ========================================
-
-
-function printDashboard(){
-
-
-
-    window.print();
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ========================================
 // KEYBOARD SHORTCUT
+// CTRL + SHIFT + R
 // ========================================
 
 
@@ -1771,7 +1901,11 @@ document.addEventListener(
 
         &&
 
-        e.key==="r"
+        e.shiftKey
+
+        &&
+
+        e.key==="R"
 
     ){
 
@@ -1781,7 +1915,7 @@ document.addEventListener(
 
 
 
-        loadDashboard();
+        safeRefresh();
 
 
 
@@ -1827,7 +1961,7 @@ document.addEventListener(
 
 
 // ========================================
-// WINDOW CLEANUP
+// CLEANUP
 // ========================================
 
 
@@ -1840,6 +1974,24 @@ window.addEventListener(
 
 
     stopDashboardRealtime();
+
+
+
+
+
+    if(STATUS_CHART){
+
+
+
+        STATUS_CHART.destroy();
+
+
+
+        STATUS_CHART=null;
+
+
+
+    }
 
 
 
