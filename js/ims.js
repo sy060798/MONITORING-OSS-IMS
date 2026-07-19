@@ -2605,13 +2605,15 @@ function importIMSExcel(file){
 
 
 
-           rows = removeDuplicateByReference(rows);
+            let result =
 
-let result =
-await apiRequest(
-    "bulkIMS",
-    rows
-);
+            await apiRequest(
+
+                "bulkIMS",
+
+                rows
+
+            );
 
 
 
