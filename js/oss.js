@@ -1,9 +1,14 @@
 // ========================================
-// OSS MANAGEMENT SYSTEM V4
+// OSS MANAGEMENT SYSTEM V5
+// PART 1
 // API.JS V3 COMPATIBLE
-// CRUD + PAGINATION + EXCEL READY
+// CRUD + DISPLAY FIX
 // ========================================
 
+
+// ========================================
+// GLOBAL
+// ========================================
 
 let OSS_DATA = [];
 
@@ -17,8 +22,10 @@ let OSS_TOTAL = 0;
 
 
 
+
+
 // ========================================
-// LOAD OSS
+// LOAD OSS FROM API
 // ========================================
 
 async function loadOSS(){
@@ -30,7 +37,8 @@ async function loadOSS(){
         showLoadingOSS(true);
 
 
-        const result = await apiRequest(
+
+        const response = await apiRequest(
 
             "getOSS",
 
@@ -46,23 +54,47 @@ async function loadOSS(){
 
 
 
-        if(!result.success){
+        console.log(
+            "OSS API RESPONSE",
+            response
+        );
+
+
+
+        if(
+            !response ||
+            response.success !== true
+        ){
 
             throw new Error(
-                result.message
+                response.message || 
+                "API OSS ERROR"
             );
 
         }
 
 
 
-        OSS_DATA = result.data || [];
+
+        OSS_DATA = response.data || [];
+
+
 
         OSS_TOTAL = OSS_DATA.length;
 
 
 
-        renderOSS(OSS_DATA);
+        console.log(
+            "OSS DATA DISPLAY",
+            OSS_DATA
+        );
+
+
+
+        renderOSS(
+            OSS_DATA
+        );
+
 
 
         updateTotalOSS();
@@ -71,16 +103,22 @@ async function loadOSS(){
 
     }
 
+
     catch(error){
 
 
         console.error(
+
             "LOAD OSS ERROR",
+
             error
+
         );
 
 
+
         renderOSS([]);
+
 
 
     }
@@ -101,18 +139,28 @@ async function loadOSS(){
 
 
 
+
+
+
+
 // ========================================
-// RENDER TABLE
+// RENDER TABLE OSS
 // ========================================
 
 
 function renderOSS(data){
 
 
+
     let html="";
 
 
-    if(!data.length){
+
+
+    if(
+        !data ||
+        data.length===0
+    ){
 
 
         html=`
@@ -132,7 +180,6 @@ function renderOSS(data){
 
     }
 
-
     else{
 
 
@@ -144,16 +191,32 @@ function renderOSS(data){
             <tr>
 
 
-            <td>${item.reference_code || "-"}</td>
+            <td>
+
+            ${item.reference_code || "-"}
+
+            </td>
 
 
-            <td>${item.cust_id || "-"}</td>
+            <td>
+
+            ${item.cust_id || "-"}
+
+            </td>
 
 
-            <td>${item.customer || "-"}</td>
+            <td>
+
+            ${item.customer || "-"}
+
+            </td>
 
 
-            <td>${item.city || "-"}</td>
+            <td>
+
+            ${item.city || "-"}
+
+            </td>
 
 
             <td>
@@ -168,6 +231,7 @@ function renderOSS(data){
             ✏ Edit
 
             </button>
+
 
 
             <button
@@ -192,13 +256,15 @@ function renderOSS(data){
         });
 
 
+
     }
 
 
 
-    const table =
 
-    document.getElementById(
+
+
+    const tbody = document.getElementById(
 
         "ossData"
 
@@ -206,93 +272,10 @@ function renderOSS(data){
 
 
 
-    if(table){
-
-        table.innerHTML=html;
-
-    }
+    if(tbody){
 
 
-}
-
-
-
-
-
-
-// ========================================
-// SAVE OSS
-// ========================================
-
-
-async function saveOSS(){
-
-
-    let data={
-
-
-        reference_code:
-
-        getInput("referenceCode"),
-
-
-
-        cust_id:
-
-        getInput("custID"),
-
-
-
-        customer:
-
-        getInput("customer"),
-
-
-
-        city:
-
-        getInput("city")
-
-
-    };
-
-
-
-    if(!data.reference_code){
-
-
-        alert(
-            "Reference Code wajib"
-        );
-
-
-        return;
-
-
-    }
-
-
-
-    let result;
-
-
-
-    if(OSS_EDIT_ID){
-
-
-        result = await apiRequest(
-
-            "updateOSS",
-
-            {
-
-                id:OSS_EDIT_ID,
-
-                ...data
-
-            }
-
-        );
+        tbody.innerHTML = html;
 
 
     }
@@ -300,11 +283,9 @@ async function saveOSS(){
     else{
 
 
-        result = await apiRequest(
+        console.error(
 
-            "addOSS",
-
-            data
+        "Element ossData tidak ditemukan"
 
         );
 
@@ -313,22 +294,6 @@ async function saveOSS(){
 
 
 
-    if(result.success){
-
-
-        closeOSS();
-
-
-        resetOSSForm();
-
-
-        loadOSS();
-
-
-    }
-
-
-
 }
 
 
@@ -337,343 +302,37 @@ async function saveOSS(){
 
 
 
-// ========================================
-// EDIT
-// ========================================
-
-
-function editOSS(index){
-
-
-    let item = OSS_DATA[index];
-
-
-    OSS_EDIT_ID=item.id;
-
-
-
-    setInput(
-
-        "referenceCode",
-
-        item.reference_code
-
-    );
-
-
-    setInput(
-
-        "custID",
-
-        item.cust_id
-
-    );
-
-
-    setInput(
-
-        "customer",
-
-        item.customer
-
-    );
-
-
-    setInput(
-
-        "city",
-
-        item.city
-
-    );
-
-
-
-    openAddOSS();
-
-
-
-}
-
-
-
-
-
 
 
 // ========================================
-// DELETE
-// ========================================
-
-
-async function removeOSS(index){
-
-
-    let item = OSS_DATA[index];
-
-
-
-    if(!confirm(
-        "Hapus OSS?"
-    )) return;
-
-
-
-    let result = await apiRequest(
-
-        "deleteOSS",
-
-        {
-
-            id:item.id
-
-        }
-
-    );
-
-
-
-    if(result.success){
-
-
-        loadOSS();
-
-
-    }
-
-
-}
-
-
-
-
-
-
-
-// ========================================
-// SEARCH
-// ========================================
-
-
-function searchOSS(){
-
-
-    let key =
-
-    getInput(
-
-        "searchOSS"
-
-    )
-
-    .toLowerCase();
-
-
-
-    let result = OSS_DATA.filter(item=>{
-
-
-        return (
-
-        String(item.reference_code)
-
-        .toLowerCase()
-
-        .includes(key)
-
-
-
-        ||
-
-
-
-        String(item.customer)
-
-        .toLowerCase()
-
-        .includes(key)
-
-
-
-        ||
-
-
-
-        String(item.city)
-
-        .toLowerCase()
-
-        .includes(key)
-
-        );
-
-
-    });
-
-
-
-    renderOSS(result);
-
-
-}
-
-
-
-
-
-
-// ========================================
-// FORM HELPER
-// ========================================
-
-
-function getInput(id){
-
-
-    let el=document.getElementById(id);
-
-
-    return el ? el.value.trim() : "";
-
-
-}
-
-
-
-function setInput(id,val){
-
-
-    let el=document.getElementById(id);
-
-
-    if(el){
-
-        el.value=val || "";
-
-    }
-
-
-}
-
-
-
-
-
-
-
-// ========================================
-// RESET
-// ========================================
-
-
-function resetOSSForm(){
-
-
-    OSS_EDIT_ID=null;
-
-
-    [
-
-    "referenceCode",
-
-    "custID",
-
-    "customer",
-
-    "city"
-
-    ].forEach(id=>{
-
-
-        setInput(id,"");
-
-
-    });
-
-
-}
-
-
-
-
-
-
-
-// ========================================
-// MODAL
-// ========================================
-
-
-function openAddOSS(){
-
-
-    let modal=document.getElementById(
-
-        "modalOSS"
-
-    );
-
-
-    if(modal){
-
-        modal.style.display="flex";
-
-    }
-
-
-}
-
-
-
-function closeOSS(){
-
-
-    let modal=document.getElementById(
-
-        "modalOSS"
-
-    );
-
-
-    if(modal){
-
-        modal.style.display="none";
-
-    }
-
-
-}
-
-
-
-
-
-
-
-// ========================================
-// TOTAL
+// TOTAL OSS CARD
 // ========================================
 
 
 function updateTotalOSS(){
 
 
-    let el=document.getElementById(
+
+    let el = document.getElementById(
 
         "totalOSS"
 
     );
 
 
+
     if(el){
 
 
-        el.innerText=
+        el.innerText =
 
-        OSS_TOTAL+" Data";
+        OSS_TOTAL +
+
+        " Data";
 
 
     }
+
 
 
 }
@@ -683,8 +342,11 @@ function updateTotalOSS(){
 
 
 
+
+
+
 // ========================================
-// LOADING
+// LOADING STATUS
 // ========================================
 
 
@@ -696,6 +358,7 @@ function showLoadingOSS(state){
         "loadingOSS"
 
     );
+
 
 
     if(!el)return;
@@ -717,8 +380,52 @@ function showLoadingOSS(state){
 
 
 
+
+
 // ========================================
-// START
+// CHECK API
+// ========================================
+
+
+async function checkOSSAPI(){
+
+
+
+    const result = await apiRequest(
+
+        "test",
+
+        {}
+
+    );
+
+
+
+    console.log(
+
+        "OSS API CHECK",
+
+        result
+
+    );
+
+
+
+    return result;
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// INIT OSS
 // ========================================
 
 
@@ -737,14 +444,646 @@ document.addEventListener(
 
 console.log(
 
-"OSS JS V4 READY API.JS V3"
+"OSS JS V5 PART 1 READY"
 
 );
 
 // ========================================
-// OSS JS V4 PART 2
-// PAGINATION + EXCEL IMPORT EXPORT
-// API.JS V3 CONNECT
+// OSS MANAGEMENT SYSTEM V5
+// PART 2
+// CRUD + FORM + SEARCH
+// API.JS V3 COMPATIBLE
+// ========================================
+
+
+// ========================================
+// SAVE OSS
+// ========================================
+
+async function saveOSS(){
+
+
+    let data={
+
+
+        reference_code:getInputOSS(
+            "referenceCode"
+        ),
+
+
+        cust_id:getInputOSS(
+            "custID"
+        ),
+
+
+        customer:getInputOSS(
+            "customer"
+        ),
+
+
+        city:getInputOSS(
+            "city"
+        )
+
+
+    };
+
+
+
+
+
+    if(!data.reference_code){
+
+
+        alert(
+            "Reference Code wajib diisi"
+        );
+
+
+        return;
+
+
+    }
+
+
+
+
+
+
+    try{
+
+
+        let result;
+
+
+
+        if(OSS_EDIT_ID){
+
+
+
+            result = await apiRequest(
+
+                "updateOSS",
+
+                {
+
+                    id:OSS_EDIT_ID,
+
+                    ...data
+
+                }
+
+            );
+
+
+        }
+
+        else{
+
+
+
+            result = await apiRequest(
+
+                "addOSS",
+
+                data
+
+            );
+
+
+        }
+
+
+
+
+
+        console.log(
+
+            "SAVE OSS RESULT",
+
+            result
+
+        );
+
+
+
+
+
+        if(result.success){
+
+
+
+            closeOSS();
+
+
+            resetOSSForm();
+
+
+            OSS_PAGE=1;
+
+
+            await loadOSS();
+
+
+
+        }
+
+
+
+
+    }
+
+    catch(error){
+
+
+        console.error(
+
+            "SAVE OSS ERROR",
+
+            error
+
+        );
+
+
+        alert(
+
+            "Gagal simpan OSS"
+
+        );
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// EDIT OSS
+// ========================================
+
+
+function editOSS(index){
+
+
+
+    let item = OSS_DATA[index];
+
+
+
+    if(!item)return;
+
+
+
+    OSS_EDIT_ID = item.id;
+
+
+
+
+
+    setInputOSS(
+
+        "referenceCode",
+
+        item.reference_code
+
+    );
+
+
+    setInputOSS(
+
+        "custID",
+
+        item.cust_id
+
+    );
+
+
+    setInputOSS(
+
+        "customer",
+
+        item.customer
+
+    );
+
+
+    setInputOSS(
+
+        "city",
+
+        item.city
+
+    );
+
+
+
+    openAddOSS();
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// DELETE OSS
+// ========================================
+
+
+async function removeOSS(index){
+
+
+
+    let item = OSS_DATA[index];
+
+
+
+    if(!item)return;
+
+
+
+
+    if(!confirm(
+
+        "Hapus data OSS?"
+
+    )){
+
+
+        return;
+
+
+    }
+
+
+
+
+
+
+    try{
+
+
+
+        let result = await apiRequest(
+
+            "deleteOSS",
+
+            {
+
+                id:item.id
+
+            }
+
+        );
+
+
+
+
+
+        console.log(
+
+            "DELETE OSS",
+
+            result
+
+        );
+
+
+
+
+
+        if(result.success){
+
+
+            await loadOSS();
+
+
+        }
+
+
+
+
+
+    }
+
+    catch(error){
+
+
+
+        console.error(
+
+            "DELETE ERROR",
+
+            error
+
+        );
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// SEARCH OSS
+// ========================================
+
+
+function searchOSS(){
+
+
+
+    let key = getInputOSS(
+
+        "searchOSS"
+
+    )
+
+    .toLowerCase();
+
+
+
+
+
+
+    let result = OSS_DATA.filter(item=>{
+
+
+
+        return (
+
+
+
+        String(
+            item.reference_code || ""
+        )
+
+        .toLowerCase()
+
+        .includes(key)
+
+
+
+        ||
+
+
+
+        String(
+            item.customer || ""
+        )
+
+        .toLowerCase()
+
+        .includes(key)
+
+
+
+        ||
+
+
+
+        String(
+            item.city || ""
+        )
+
+        .toLowerCase()
+
+        .includes(key)
+
+
+
+        );
+
+
+
+    });
+
+
+
+
+
+    renderOSS(result);
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// INPUT HELPER
+// ========================================
+
+
+function getInputOSS(id){
+
+
+    let el=document.getElementById(id);
+
+
+
+    return el ?
+
+    el.value.trim() :
+
+    "";
+
+
+}
+
+
+
+
+
+function setInputOSS(id,value){
+
+
+    let el=document.getElementById(id);
+
+
+
+    if(el){
+
+
+        el.value=value || "";
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// RESET FORM
+// ========================================
+
+
+function resetOSSForm(){
+
+
+
+    OSS_EDIT_ID=null;
+
+
+
+
+    [
+
+    "referenceCode",
+
+    "custID",
+
+    "customer",
+
+    "city"
+
+
+    ].forEach(id=>{
+
+
+        setInputOSS(
+
+            id,
+
+            ""
+
+        );
+
+
+    });
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// MODAL OPEN
+// ========================================
+
+
+function openAddOSS(){
+
+
+    let modal=document.getElementById(
+
+        "modalOSS"
+
+    );
+
+
+
+    if(modal){
+
+
+        modal.style.display="flex";
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+// ========================================
+// MODAL CLOSE
+// ========================================
+
+
+function closeOSS(){
+
+
+    let modal=document.getElementById(
+
+        "modalOSS"
+
+    );
+
+
+
+    if(modal){
+
+
+        modal.style.display="none";
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+console.log(
+
+"OSS JS V5 PART 2 READY"
+
+);
+
+// ========================================
+// OSS MANAGEMENT SYSTEM V5
+// PART 3
+// PAGINATION + EXCEL
+// IMPORT EXPORT
+// API.JS V3 COMPATIBLE
 // ========================================
 
 
@@ -758,13 +1097,19 @@ function nextOSSPage(){
 
     let maxPage = Math.ceil(
 
-        OSS_TOTAL / OSS_LIMIT
+        OSS_TOTAL /
+
+        OSS_LIMIT
 
     );
 
 
 
-    if(OSS_PAGE < maxPage){
+    if(
+
+        OSS_PAGE < maxPage
+
+    ){
 
 
         OSS_PAGE++;
@@ -787,7 +1132,12 @@ function nextOSSPage(){
 function prevOSSPage(){
 
 
-    if(OSS_PAGE > 1){
+
+    if(
+
+        OSS_PAGE > 1
+
+    ){
 
 
         OSS_PAGE--;
@@ -799,6 +1149,7 @@ function prevOSSPage(){
     }
 
 
+
 }
 
 
@@ -807,7 +1158,10 @@ function prevOSSPage(){
 
 
 
+
+
 function renderOSSPagination(){
+
 
 
     let el=document.getElementById(
@@ -822,6 +1176,8 @@ function renderOSSPagination(){
 
 
 
+
+
     let totalPage=Math.ceil(
 
         OSS_TOTAL /
@@ -829,6 +1185,8 @@ function renderOSSPagination(){
         OSS_LIMIT
 
     );
+
+
 
 
 
@@ -844,7 +1202,11 @@ function renderOSSPagination(){
 
     <span>
 
-    ${OSS_PAGE} / ${totalPage || 1}
+    ${OSS_PAGE}
+
+    /
+
+    ${totalPage || 1}
 
     </span>
 
@@ -868,21 +1230,28 @@ function renderOSSPagination(){
 
 
 
+
+
 // ========================================
-// REFRESH OSS
+// REFRESH DATA
 // ========================================
 
 
 async function refreshOSS(){
 
 
+
     OSS_PAGE=1;
+
 
 
     await loadOSS();
 
 
+
 }
+
+
 
 
 
@@ -903,7 +1272,9 @@ function importOSSExcel(file){
 
 
         alert(
-            "Excel library belum aktif"
+
+        "Library Excel belum aktif"
+
         );
 
 
@@ -916,7 +1287,9 @@ function importOSSExcel(file){
 
 
 
+
     let reader=new FileReader();
+
 
 
 
@@ -925,7 +1298,7 @@ function importOSSExcel(file){
 
 
 
-        let data=new Uint8Array(
+        let buffer = new Uint8Array(
 
             e.target.result
 
@@ -934,9 +1307,10 @@ function importOSSExcel(file){
 
 
 
-        let workbook=XLSX.read(
 
-            data,
+        let workbook = XLSX.read(
+
+            buffer,
 
             {
 
@@ -949,9 +1323,8 @@ function importOSSExcel(file){
 
 
 
-        let sheet=
 
-        workbook.Sheets[
+        let sheet = workbook.Sheets[
 
             workbook.SheetNames[0]
 
@@ -960,13 +1333,28 @@ function importOSSExcel(file){
 
 
 
-        let rows=
 
-        XLSX.utils.sheet_to_json(
+        let rows = XLSX.utils.sheet_to_json(
 
             sheet
 
         );
+
+
+
+
+
+
+        console.log(
+
+            "IMPORT OSS",
+
+            rows
+
+        );
+
+
+
 
 
 
@@ -976,15 +1364,29 @@ function importOSSExcel(file){
         .then(result=>{
 
 
+
+            console.log(
+
+            result
+
+            );
+
+
+
             if(result.success){
 
 
+
                 alert(
-                    "Import OSS berhasil"
+
+                "Import OSS berhasil"
+
                 );
 
 
+
                 loadOSS();
+
 
 
             }
@@ -995,7 +1397,11 @@ function importOSSExcel(file){
 
 
 
+
+
     };
+
+
 
 
 
@@ -1013,8 +1419,38 @@ function importOSSExcel(file){
 
 
 
+
 // ========================================
-// EXPORT EXCEL OSS
+// BULK API
+// ========================================
+
+
+async function bulkOSSAPI(rows){
+
+
+
+    return await apiRequest(
+
+        "bulkOSS",
+
+        rows
+
+    );
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// EXPORT EXCEL
 // ========================================
 
 
@@ -1026,7 +1462,9 @@ function exportOSSExcel(){
 
 
         alert(
-            "Excel library belum aktif"
+
+        "Library Excel belum aktif"
+
         );
 
 
@@ -1039,7 +1477,7 @@ function exportOSSExcel(){
 
 
 
-    let data=OSS_DATA.map(item=>({
+    let exportData = OSS_DATA.map(item=>({
 
 
 
@@ -1075,19 +1513,18 @@ function exportOSSExcel(){
 
 
 
-    let ws=
+    let ws = XLSX.utils.json_to_sheet(
 
-    XLSX.utils.json_to_sheet(
-
-        data
+        exportData
 
     );
 
 
 
-    let wb=
 
-    XLSX.utils.book_new();
+
+    let wb = XLSX.utils.book_new();
+
 
 
 
@@ -1106,6 +1543,7 @@ function exportOSSExcel(){
 
 
 
+
     XLSX.writeFile(
 
         wb,
@@ -1116,6 +1554,8 @@ function exportOSSExcel(){
 
 
 
+
+
 }
 
 
@@ -1125,8 +1565,9 @@ function exportOSSExcel(){
 
 
 
+
 // ========================================
-// UPLOAD BUTTON CONNECT
+// UPLOAD BUTTON
 // ========================================
 
 
@@ -1134,9 +1575,7 @@ function uploadOSS(){
 
 
 
-    let input=
-
-    document.getElementById(
+    let input=document.getElementById(
 
         "fileOSS"
 
@@ -1144,7 +1583,15 @@ function uploadOSS(){
 
 
 
-    if(input && input.files[0]){
+
+    if(
+
+        input &&
+
+        input.files.length
+
+    ){
+
 
 
         importOSSExcel(
@@ -1154,467 +1601,20 @@ function uploadOSS(){
         );
 
 
-    }
-
-
-}
-
-
-
-
-
-
-
-
-// ========================================
-// BULK ADD CONNECT API
-// ========================================
-
-
-async function bulkOSSAPI(rows){
-
-
-
-    return await apiRequest(
-
-        "bulkOSS",
-
-        rows
-
-    );
-
-
-}
-
-
-
-
-
-
-
-// ========================================
-// AUTO REFRESH OSS
-// ========================================
-
-
-let OSS_TIMER=null;
-
-
-
-function startOSSRealtime(){
-
-
-
-    stopOSSRealtime();
-
-
-
-    OSS_TIMER=setInterval(()=>{
-
-
-        loadOSS();
-
-
-
-    },60000);
-
-
-
-}
-
-
-
-
-
-
-function stopOSSRealtime(){
-
-
-
-    if(OSS_TIMER){
-
-
-        clearInterval(
-
-            OSS_TIMER
-
-        );
-
-
-        OSS_TIMER=null;
-
-
-    }
-
-
-}
-
-
-
-
-
-
-// ========================================
-// INIT REALTIME
-// ========================================
-
-
-window.addEventListener(
-
-"beforeunload",
-
-()=>{
-
-
-    stopOSSRealtime();
-
-
-});
-
-
-
-console.log(
-
-"OSS JS V4 PART 2 READY"
-
-);
-// ========================================
-// OSS JS V4 PART 3
-// FILTER + VALIDATION + UI CONNECTOR
-// API.JS V3 READY
-// ========================================
-
-
-// ========================================
-// FILTER ADVANCED
-// ========================================
-
-function filterOSSStatus(status){
-
-
-    let result = OSS_DATA.filter(item=>{
-
-
-        return item.status === status;
-
-
-    });
-
-
-
-    renderOSS(result);
-
-
-}
-
-
-
-
-
-
-
-
-// ========================================
-// SORT DATA
-// ========================================
-
-
-function sortOSS(field){
-
-
-
-    let result=[...OSS_DATA];
-
-
-
-    result.sort((a,b)=>{
-
-
-        return String(
-
-            a[field] || ""
-
-        )
-
-        .localeCompare(
-
-            String(
-
-                b[field] || ""
-
-            )
-
-        );
-
-
-    });
-
-
-
-    renderOSS(result);
-
-
-
-}
-
-
-
-
-
-
-
-
-// ========================================
-// VALIDATE FORM
-// ========================================
-
-
-function validateOSS(data){
-
-
-
-    if(!data.reference_code){
-
-
-        return false;
-
-
-    }
-
-
-
-    if(!data.customer){
-
-
-        return false;
-
-
-    }
-
-
-
-    return true;
-
-
-
-}
-
-
-
-
-
-
-
-
-// ========================================
-// PATCH SAVE OSS
-// ========================================
-
-
-async function saveOSSFinal(){
-
-
-
-    let data={
-
-
-
-        reference_code:
-
-        getInput("referenceCode"),
-
-
-
-        cust_id:
-
-        getInput("custID"),
-
-
-
-        customer:
-
-        getInput("customer"),
-
-
-
-        city:
-
-        getInput("city")
-
-
-
-    };
-
-
-
-
-    if(!validateOSS(data)){
-
-
-        alert(
-
-        "Data OSS belum lengkap"
-
-        );
-
-
-        return;
-
-
-    }
-
-
-
-
-
-    try{
-
-
-
-        let result;
-
-
-
-        if(OSS_EDIT_ID){
-
-
-
-            result = await apiRequest(
-
-                "updateOSS",
-
-                {
-
-                    id:OSS_EDIT_ID,
-
-                    ...data
-
-                }
-
-            );
-
-
-
-        }
-
-        else{
-
-
-
-            result = await apiRequest(
-
-                "addOSS",
-
-                data
-
-            );
-
-
-
-        }
-
-
-
-
-
-
-
-        if(result.success){
-
-
-
-            closeOSS();
-
-
-
-            resetOSSForm();
-
-
-
-            await loadOSS();
-
-
-
-        }
-
-
-
-    }
-
-
-    catch(e){
-
-
-
-        console.error(
-
-            "SAVE OSS ERROR",
-
-            e
-
-        );
-
-
-    }
-
-
-
-}
-
-
-
-
-
-
-
-
-// ========================================
-// CHECK API OSS
-// ========================================
-
-
-async function checkOSSAPI(){
-
-
-
-    let result = await apiRequest(
-
-        "test",
-
-        {}
-
-    );
-
-
-
-    if(result.success){
-
-
-
-        console.log(
-
-        "OSS API ONLINE"
-
-        );
-
 
     }
 
     else{
 
 
-        console.log(
+        alert(
 
-        "OSS API ERROR"
+        "Pilih file Excel dulu"
 
         );
 
 
     }
-
-
-
-    return result;
 
 
 
@@ -1629,7 +1629,7 @@ async function checkOSSAPI(){
 
 
 // ========================================
-// DOWNLOAD TEMPLATE EXCEL
+// TEMPLATE EXCEL
 // ========================================
 
 
@@ -1637,18 +1637,15 @@ function downloadOSSTemplate(){
 
 
 
-    if(typeof XLSX==="undefined"){
+    if(typeof XLSX==="undefined")
 
-
-        return;
-
-
-    }
+    return;
 
 
 
 
-    let template=[{
+
+    let data=[{
 
 
         reference_code:"REF001",
@@ -1669,19 +1666,19 @@ function downloadOSSTemplate(){
 
 
 
-    let ws=
 
-    XLSX.utils.json_to_sheet(
+    let ws=XLSX.utils.json_to_sheet(
 
-        template
+        data
 
     );
 
 
 
-    let wb=
 
-    XLSX.utils.book_new();
+
+    let wb=XLSX.utils.book_new();
+
 
 
 
@@ -1695,6 +1692,8 @@ function downloadOSSTemplate(){
         "TEMPLATE"
 
     );
+
+
 
 
 
@@ -1718,126 +1717,64 @@ function downloadOSSTemplate(){
 
 
 
-// ========================================
-// MODAL CLICK OUTSIDE
-// ========================================
-
-
-window.onclick=function(e){
-
-
-
-    let modal=
-
-    document.getElementById(
-
-        "modalOSS"
-
-    );
-
-
-
-    if(e.target===modal){
-
-
-
-        closeOSS();
-
-
-
-    }
-
-
-
-}
-
-
-
-
-
-
-
-
-// ========================================
-// RESET PAGE
-// ========================================
-
-
-function resetOSSTable(){
-
-
-
-    OSS_PAGE=1;
-
-
-
-    loadOSS();
-
-
-
-}
-
-
-
-
-
-
-
-
-// ========================================
-// FINAL READY
-// ========================================
-
-
 console.log(
 
-"OSS JS V4 PART 3 READY"
+"OSS JS V5 PART 3 READY"
 
 );
 
 // ========================================
-// OSS JS V4 PART 4
-// FINAL INTEGRATION SYSTEM
-// API.JS V3 READY
+// OSS JS V5 FINAL
+// PART 4
+// API.JS V3 COMPATIBLE
+// DASHBOARD READY
 // ========================================
 
 
 // ========================================
-// GLOBAL STATUS
+// SYSTEM STATE
 // ========================================
 
+let OSS_READY=false;
 
-let OSS_SYSTEM_READY = false;
-
-let OSS_AUTO_REFRESH = null;
-
-
-
+let OSS_REFRESH_TIMER=null;
 
 
 
 
 
 // ========================================
-// INIT OSS SYSTEM
+// FINAL INIT SYSTEM
 // ========================================
 
-
-async function initOSSSystem(){
+async function startOSSSystem(){
 
 
     try{
 
 
         console.log(
-
-        "START OSS SYSTEM"
-
+            "START OSS V5 SYSTEM"
         );
 
 
 
-        await checkOSSAPI();
+        let api =
+        await apiRequest(
+            "test",
+            {}
+        );
+
+
+
+        if(!api.success){
+
+            throw new Error(
+                "API tidak aktif"
+            );
+
+        }
+
 
 
 
@@ -1849,30 +1786,24 @@ async function initOSSSystem(){
 
 
 
-        OSS_SYSTEM_READY=true;
+        OSS_READY=true;
 
 
 
         console.log(
-
-        "OSS SYSTEM READY"
-
+            "OSS V5 SYSTEM READY"
         );
-
 
 
     }
 
 
-    catch(error){
+    catch(err){
 
 
         console.error(
-
-        "OSS INIT ERROR",
-
-        error
-
+            "OSS SYSTEM ERROR",
+            err
         );
 
 
@@ -1885,14 +1816,9 @@ async function initOSSSystem(){
 
 
 
-
-
-
-
 // ========================================
-// AUTO SYNC OSS
+// REALTIME SYNC
 // ========================================
-
 
 function startOSSRealtime(){
 
@@ -1901,11 +1827,11 @@ function startOSSRealtime(){
 
 
 
-    OSS_AUTO_REFRESH = setInterval(()=>{
+    OSS_REFRESH_TIMER =
+    setInterval(()=>{
 
 
         loadOSS();
-
 
 
     },60000);
@@ -1917,31 +1843,21 @@ function startOSSRealtime(){
 
 
 
-
-
-
 function stopOSSRealtime(){
 
 
-
-    if(OSS_AUTO_REFRESH){
-
+    if(OSS_REFRESH_TIMER){
 
 
         clearInterval(
-
-            OSS_AUTO_REFRESH
-
+            OSS_REFRESH_TIMER
         );
 
 
-
-        OSS_AUTO_REFRESH=null;
-
+        OSS_REFRESH_TIMER=null;
 
 
     }
-
 
 
 }
@@ -1951,20 +1867,14 @@ function stopOSSRealtime(){
 
 
 
-
-
-
 // ========================================
-// GET ALL OSS DATA
+// LOAD ALL DATA
 // ========================================
 
-
-async function getAllOSS(){
-
+async function loadAllOSS(){
 
 
-    let result=[];
-
+    let all=[];
 
     let page=1;
 
@@ -1973,8 +1883,8 @@ async function getAllOSS(){
     while(true){
 
 
-
-        let response = await apiRequest(
+        let res =
+        await apiRequest(
 
             "getOSS",
 
@@ -1991,43 +1901,30 @@ async function getAllOSS(){
 
 
         if(
-
-            !response.success ||
-
-            !response.data ||
-
-            response.data.length===0
-
+            !res.success ||
+            !res.data ||
+            res.data.length===0
         ){
 
-
-
             break;
-
 
         }
 
 
 
-        result.push(
-
-            ...response.data
-
+        all.push(
+            ...res.data
         );
 
 
-
         page++;
-
 
 
     }
 
 
 
-
-    return result;
-
+    return all;
 
 
 }
@@ -2037,28 +1934,25 @@ async function getAllOSS(){
 
 
 
-
-
 // ========================================
-// BACKUP OSS EXCEL
+// BACKUP DATA OSS
 // ========================================
 
-
-async function backupOSSExcel(){
-
+async function backupOSS(){
 
 
-    let data = await getAllOSS();
+    let data =
+    await loadAllOSS();
 
 
 
-    if(typeof XLSX==="undefined"){
+    if(
+        typeof XLSX==="undefined"
+    ){
 
 
         alert(
-
-        "Excel library belum aktif"
-
+            "Excel library belum aktif"
         );
 
 
@@ -2069,22 +1963,15 @@ async function backupOSSExcel(){
 
 
 
-
     let ws =
-
     XLSX.utils.json_to_sheet(
-
         data
-
     );
 
 
 
-
     let wb =
-
     XLSX.utils.book_new();
-
 
 
 
@@ -2094,10 +1981,9 @@ async function backupOSSExcel(){
 
         ws,
 
-        "OSS_BACKUP"
+        "OSS"
 
     );
-
 
 
 
@@ -2105,10 +1991,9 @@ async function backupOSSExcel(){
 
         wb,
 
-        "BACKUP_OSS_FULL.xlsx"
+        "OSS_BACKUP.xlsx"
 
     );
-
 
 
 }
@@ -2118,18 +2003,16 @@ async function backupOSSExcel(){
 
 
 
-
-
 // ========================================
-// DELETE MULTI OSS
+// DELETE BULK
 // ========================================
 
-
-async function deleteMultipleOSS(ids){
-
+async function deleteBulkOSS(ids){
 
 
-    if(!Array.isArray(ids)){
+    if(
+        !Array.isArray(ids)
+    ){
 
         return;
 
@@ -2137,10 +2020,9 @@ async function deleteMultipleOSS(ids){
 
 
 
-
-
-    for(let id of ids){
-
+    for(
+        let id of ids
+    ){
 
 
         await apiRequest(
@@ -2156,17 +2038,13 @@ async function deleteMultipleOSS(ids){
         );
 
 
-
     }
-
-
 
 
 
     await loadOSS();
 
 
-
 }
 
 
@@ -2174,30 +2052,21 @@ async function deleteMultipleOSS(ids){
 
 
 
-
-
-
 // ========================================
-// CHECK DUPLICATE
+// CHECK DUPLIKAT
 // ========================================
 
-
-function checkDuplicateOSS(reference){
-
+function duplicateOSS(ref){
 
 
-    return OSS_DATA.some(item=>{
 
+    return OSS_DATA.some(
 
-        return (
+        item=>
 
-            item.reference_code === reference
+        item.reference_code===ref
 
-        );
-
-
-    });
-
+    );
 
 
 }
@@ -2208,20 +2077,16 @@ function checkDuplicateOSS(reference){
 
 
 
-
 // ========================================
-// PRINT OSS
+// PRINT
 // ========================================
-
 
 function printOSS(){
-
 
 
     window.print();
 
 
-
 }
 
 
@@ -2229,42 +2094,30 @@ function printOSS(){
 
 
 
-
-
-
 // ========================================
-// KEYBOARD SHORTCUT
+// SHORTCUT
 // ========================================
-
 
 document.addEventListener(
 
 "keydown",
 
-(e)=>{
-
+function(e){
 
 
     if(
-
         e.ctrlKey &&
-
         e.key==="r"
-
     ){
-
 
 
         e.preventDefault();
 
 
-
         loadOSS();
 
 
-
     }
-
 
 
 }
@@ -2277,11 +2130,33 @@ document.addEventListener(
 
 
 
+// ========================================
+// AUTO STOP
+// ========================================
+
+window.addEventListener(
+
+"beforeunload",
+
+()=>{
+
+
+    stopOSSRealtime();
+
+
+}
+
+);
+
+
+
+
+
+
 
 // ========================================
-// FINAL START
+// START APPLICATION
 // ========================================
-
 
 document.addEventListener(
 
@@ -2290,12 +2165,12 @@ document.addEventListener(
 ()=>{
 
 
-    initOSSSystem();
+    startOSSSystem();
 
 
-});
+}
 
-
+);
 
 
 
@@ -2303,7 +2178,5 @@ document.addEventListener(
 
 
 console.log(
-
-"OSS JS V4 FINAL COMPLETE"
-
+"OSS JS V5 FINAL COMPLETE"
 );
