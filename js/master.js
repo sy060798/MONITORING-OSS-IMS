@@ -3010,3 +3010,82 @@ console.log(
 "MASTER V10 PART 5 READY"
 
 );
+
+// ========================================
+// MASTER SYNC TIME INFO
+// TAMBAHAN V8
+// ========================================
+
+
+function updateMasterSyncTime(){
+
+
+    let el =
+    document.getElementById(
+        "loadingMaster"
+    );
+
+
+    if(!el)
+    return;
+
+
+
+    let now =
+    new Date();
+
+
+
+    el.innerHTML =
+
+    "🟢 Sync terakhir : "
+
+    +
+
+    now.toLocaleString(
+        "id-ID"
+    );
+
+
+
+}
+
+
+
+
+
+
+
+// ========================================
+// WRAP LOAD MASTER LAMA
+// ========================================
+
+const oldLoadMaster =
+window.loadMaster;
+
+
+
+window.loadMaster = async function(){
+
+
+
+    await oldLoadMaster();
+
+
+
+    updateMasterSyncTime();
+
+
+
+};
+
+
+
+
+
+
+
+
+console.log(
+"MASTER SYNC TIME ADDON READY"
+);
