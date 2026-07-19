@@ -1,75 +1,37 @@
 // ========================================
-// EXCEL SYSTEM
+// EXCEL SYSTEM V3
 // OSS IMS MONITORING
+// FOLLOW API.JS RULE
 // ========================================
-
-
-// membutuhkan library:
-// XLSX.js
-// https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js
-
-
-
-
 
 
 // ========================================
 // READ EXCEL FILE
 // ========================================
 
-
 function readExcel(file){
 
-
-
     return new Promise((resolve,reject)=>{
-
-
-
 
 
         let reader = new FileReader();
 
 
 
-
-
-
-
         reader.onload = function(e){
-
-
-
-
 
             try{
 
 
-
-
-
                 let workbook = XLSX.read(
-
 
                     e.target.result,
 
-
                     {
-
-
                         type:"binary"
-
-
                     }
 
-
-
                 );
-
-
-
-
-
 
 
 
@@ -79,47 +41,23 @@ function readExcel(file){
 
 
 
-
-
-
-
-
                 let sheet =
 
                 workbook.Sheets[sheetName];
 
 
 
-
-
-
-
-
                 let data =
-
 
                 XLSX.utils.sheet_to_json(
 
-
                     sheet,
 
-
                     {
-
-
                         defval:""
-
-
                     }
 
-
-
                 );
-
-
-
-
-
 
 
 
@@ -127,52 +65,24 @@ function readExcel(file){
 
 
 
-
-
             }
-
-
-
-
 
             catch(error){
 
-
-
                 reject(error);
-
-
 
             }
 
 
-
-
-
         };
-
-
-
-
-
-
 
 
 
         reader.onerror = function(error){
 
-
-
             reject(error);
 
-
-
         };
-
-
-
-
-
 
 
 
@@ -180,16 +90,10 @@ function readExcel(file){
 
 
 
-
     });
 
 
-
 }
-
-
-
-
 
 
 
@@ -199,9 +103,7 @@ function readExcel(file){
 // CLEAN HEADER
 // ========================================
 
-
 function cleanExcelHeader(text){
-
 
     return String(text)
 
@@ -220,42 +122,22 @@ function cleanExcelHeader(text){
 
 
 
-
 // ========================================
 // VALIDATE HEADER
 // ========================================
 
-
 function validateExcelHeader(data,required){
 
 
-
-    if(
-
-        !data ||
-
-        data.length===0
-
-    ){
-
-
+    if(!data || data.length===0){
 
         return false;
-
-
 
     }
 
 
 
-
-
-
-
-
-
     let header =
-
 
     Object.keys(data[0])
 
@@ -267,15 +149,7 @@ function validateExcelHeader(data,required){
 
 
 
-
-
-
-
-
-
     return required.every(item=>
-
-
 
         header.includes(
 
@@ -283,17 +157,10 @@ function validateExcelHeader(data,required){
 
         )
 
-
-
     );
 
 
-
 }
-
-
-
-
 
 
 
@@ -303,13 +170,10 @@ function validateExcelHeader(data,required){
 // IMPORT OSS EXCEL
 // ========================================
 
-
 async function uploadOSSExcel(){
 
 
-
     let file =
-
 
     document
 
@@ -323,113 +187,57 @@ async function uploadOSSExcel(){
 
 
 
-
-
-
-
     if(!file){
 
-
-
         alert(
-
             "Pilih file OSS"
-
         );
-
-
 
         return;
 
-
-
     }
-
-
-
-
-
 
 
 
     try{
 
 
-
-
-
         let excel =
-
 
         await readExcel(file);
 
 
 
 
-
-
-
-
-        let valid =
-
-
-        validateExcelHeader(
-
-
+        if(!validateExcelHeader(
 
             excel,
 
-
             [
-
 
                 "Reference Code",
 
-
                 "Cust ID",
-
 
                 "Customer",
 
-
                 "City"
-
-
 
             ]
 
-
-
-        );
-
-
-
-
-
-
-
-
-        if(!valid){
-
+        )){
 
 
             alert(
 
-            "Format Excel OSS salah"
+                "Format Excel OSS salah"
 
             );
 
 
-
             return;
 
-
-
         }
-
-
-
-
 
 
 
@@ -438,26 +246,15 @@ async function uploadOSSExcel(){
 
 
 
-
-
-
-
-
         excel.forEach(row=>{
-
-
-
 
 
             data.push({
 
 
-
                 reference_code:
 
                 row["Reference Code"] || "",
-
-
 
 
 
@@ -467,13 +264,9 @@ async function uploadOSSExcel(){
 
 
 
-
-
                 customer:
 
                 row["Customer"] || "",
-
-
 
 
 
@@ -482,11 +275,7 @@ async function uploadOSSExcel(){
                 row["City"] || ""
 
 
-
             });
-
-
-
 
 
         });
@@ -496,16 +285,9 @@ async function uploadOSSExcel(){
 
 
 
-
-
-
-        let result =
-
+        const result =
 
         await bulkAddOSSAPI(data);
-
-
-
 
 
 
@@ -514,24 +296,34 @@ async function uploadOSSExcel(){
         if(result.success){
 
 
-
             alert(
 
-            "Upload OSS berhasil"
+                "Upload OSS berhasil"
 
             );
 
 
 
-            loadOSS();
+            if(typeof refreshAfterOSS === "function"){
+
+
+                refreshAfterOSS();
+
+
+            }
+
+
+            else if(typeof loadOSS === "function"){
+
+
+                loadOSS();
+
+
+            }
 
 
 
         }
-
-
-
-
 
 
 
@@ -542,22 +334,23 @@ async function uploadOSSExcel(){
     catch(error){
 
 
+        console.error(
 
-        console.error(error);
+            "UPLOAD OSS ERROR",
 
-
-
-        alert(
-
-        "Upload OSS gagal"
+            error
 
         );
 
 
+        alert(
+
+            "Upload OSS gagal"
+
+        );
+
 
     }
-
-
 
 
 
@@ -568,20 +361,14 @@ async function uploadOSSExcel(){
 
 
 
-
-
-
 // ========================================
 // IMPORT IMS EXCEL
 // ========================================
 
-
 async function uploadIMSExcel(){
 
 
-
     let file =
-
 
     document
 
@@ -595,31 +382,19 @@ async function uploadIMSExcel(){
 
 
 
-
-
-
-
-
     if(!file){
-
 
 
         alert(
 
-        "Pilih file IMS"
+            "Pilih file IMS"
 
         );
 
 
-
         return;
 
-
-
     }
-
-
-
 
 
 
@@ -628,86 +403,47 @@ async function uploadIMSExcel(){
     try{
 
 
-
-
-
         let excel =
-
 
         await readExcel(file);
 
 
 
 
-
-
-
-
-        let valid =
-
-
-        validateExcelHeader(
-
-
+        if(!validateExcelHeader(
 
             excel,
 
-
             [
-
 
                 "WO",
 
-
                 "Reference Code",
-
 
                 "Quotation",
 
-
                 "Job Name",
-
 
                 "Status",
 
-
                 "Bulan"
-
-
 
             ]
 
-
-
-        );
-
-
-
-
-
-
-
-
-
-        if(!valid){
-
+        )){
 
 
             alert(
 
-            "Format Excel IMS salah"
+                "Format Excel IMS salah"
 
             );
-
 
 
             return;
 
 
-
         }
-
-
 
 
 
@@ -718,27 +454,15 @@ async function uploadIMSExcel(){
 
 
 
-
-
-
-
-
         excel.forEach(row=>{
-
-
-
 
 
             data.push({
 
 
-
-
                 wo:
 
                 row["WO"] || "",
-
-
 
 
 
@@ -748,13 +472,9 @@ async function uploadIMSExcel(){
 
 
 
-
-
                 quotation:
 
                 row["Quotation"] || "",
-
-
 
 
 
@@ -764,13 +484,9 @@ async function uploadIMSExcel(){
 
 
 
-
-
                 status:
 
                 row["Status"] || "Progress",
-
-
 
 
 
@@ -779,10 +495,7 @@ async function uploadIMSExcel(){
                 row["Bulan"] || ""
 
 
-
             });
-
-
 
 
 
@@ -793,15 +506,9 @@ async function uploadIMSExcel(){
 
 
 
-
-
-        let result =
-
+        const result =
 
         await bulkAddIMSAPI(data);
-
-
-
 
 
 
@@ -810,855 +517,53 @@ async function uploadIMSExcel(){
         if(result.success){
 
 
-
             alert(
 
-            "Upload IMS berhasil"
+                "Upload IMS berhasil"
 
             );
 
 
 
-            loadIMS();
+            if(typeof loadIMS === "function"){
 
+
+                loadIMS();
+
+
+            }
 
 
         }
 
 
 
-
     }
-
-
 
 
 
     catch(error){
 
 
+        console.error(
 
-        console.error(error);
+            "UPLOAD IMS ERROR",
 
-
-
-        alert(
-
-        "Upload IMS gagal"
+            error
 
         );
 
 
-
-    }
-
-
-
-}
-
-// ========================================
-// EXPORT OSS
-// ========================================
-
-
-function exportOSSExcel(){
-
-
-
-    if(
-
-        !window.ossData ||
-
-        ossData.length===0
-
-    ){
-
-
-
         alert(
 
-        "Data OSS kosong"
+            "Upload IMS gagal"
 
         );
 
 
-
-        return;
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-    let ws =
-
-
-    XLSX.utils.json_to_sheet(
-
-
-        ossData.map(item=>({
-
-
-
-            "Reference Code":
-
-            item.reference_code,
-
-
-
-            "Cust ID":
-
-            item.cust_id,
-
-
-
-            "Customer":
-
-            item.customer,
-
-
-
-            "City":
-
-            item.city
-
-
-
-        }))
-
-
-
-    );
-
-
-
-
-
-
-
-
-
-    let wb =
-
-
-    XLSX.utils.book_new();
-
-
-
-
-
-
-
-
-    XLSX.utils.book_append_sheet(
-
-
-        wb,
-
-
-        ws,
-
-
-        "OSS"
-
-
-
-    );
-
-
-
-
-
-
-
-
-
-    XLSX.writeFile(
-
-
-        wb,
-
-
-        "Data_OSS.xlsx"
-
-
-
-    );
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-// ========================================
-// EXPORT IMS
-// ========================================
-
-
-function exportIMSExcel(){
-
-
-
-    if(
-
-        !window.imsData ||
-
-        imsData.length===0
-
-    ){
-
-
-
-        alert(
-
-        "Data IMS kosong"
-
-        );
-
-
-
-        return;
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-    let ws =
-
-
-    XLSX.utils.json_to_sheet(
-
-
-        imsData.map(item=>({
-
-
-
-
-            "WO":
-
-            item.wo,
-
-
-
-
-            "Reference Code":
-
-            item.reference_code,
-
-
-
-
-            "Quotation":
-
-            item.quotation,
-
-
-
-
-            "Job Name":
-
-            item.job_name,
-
-
-
-
-            "Status":
-
-            item.status,
-
-
-
-
-            "Bulan":
-
-            item.bulan
-
-
-
-
-        }))
-
-
-
-    );
-
-
-
-
-
-
-
-
-
-    let wb =
-
-
-    XLSX.utils.book_new();
-
-
-
-
-
-
-
-
-
-    XLSX.utils.book_append_sheet(
-
-
-        wb,
-
-
-        ws,
-
-
-        "IMS"
-
-
-
-    );
-
-
-
-
-
-
-
-
-
-    XLSX.writeFile(
-
-
-        wb,
-
-
-        "Data_IMS.xlsx"
-
-
-
-    );
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-// ========================================
-// EXPORT MASTER
-// ========================================
-
-
-function exportMasterExcel(){
-
-
-
-    if(
-
-        !window.masterData ||
-
-        masterData.length===0
-
-    ){
-
-
-
-        alert(
-
-        "Data Master kosong"
-
-        );
-
-
-
-        return;
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-    let ws =
-
-
-    XLSX.utils.json_to_sheet(
-
-
-        masterData.map(item=>({
-
-
-
-
-            "WO":
-
-            item.wo,
-
-
-
-
-
-            "Reference Code":
-
-            item.reference_code,
-
-
-
-
-
-            "Customer":
-
-            item.customer,
-
-
-
-
-
-            "City":
-
-            item.city,
-
-
-
-
-
-            "Bulan":
-
-            item.bulan,
-
-
-
-
-
-            "Job Name":
-
-            item.job_name,
-
-
-
-
-
-            "Status":
-
-            item.status,
-
-
-
-
-
-            "Note":
-
-            item.note
-
-
-
-
-
-        }))
-
-
-
-    );
-
-
-
-
-
-
-
-
-
-    let wb =
-
-
-    XLSX.utils.book_new();
-
-
-
-
-
-
-
-
-    XLSX.utils.book_append_sheet(
-
-
-        wb,
-
-
-        ws,
-
-
-        "MASTER"
-
-
-
-    );
-
-
-
-
-
-
-
-
-
-    XLSX.writeFile(
-
-
-        wb,
-
-
-        "Master_Monitoring.xlsx"
-
-
-
-    );
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-// ========================================
-// DOWNLOAD TEMPLATE OSS
-// ========================================
-
-
-function downloadTemplateOSS(){
-
-
-
-    let data=[
-
-
-
-        {
-
-
-
-            "Reference Code":"",
-
-
-            "Cust ID":"",
-
-
-            "Customer":"",
-
-
-            "City":""
-
-
-
-        }
-
-
-
-    ];
-
-
-
-
-
-
-
-
-    downloadExcelFile(
-
-
-        data,
-
-
-        "Template_OSS.xlsx"
-
-
-
-    );
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-// ========================================
-// DOWNLOAD TEMPLATE IMS
-// ========================================
-
-
-function downloadTemplateIMS(){
-
-
-
-    let data=[
-
-
-
-        {
-
-
-
-            "WO":"",
-
-
-            "Reference Code":"",
-
-
-            "Quotation":"",
-
-
-            "Job Name":"",
-
-
-            "Status":"Progress",
-
-
-            "Bulan":""
-
-
-
-        }
-
-
-
-    ];
-
-
-
-
-
-
-
-
-    downloadExcelFile(
-
-
-        data,
-
-
-        "Template_IMS.xlsx"
-
-
-
-    );
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-// ========================================
-// DOWNLOAD HELPER
-// ========================================
-
-
-function downloadExcelFile(data,name){
-
-
-
-    let ws =
-
-
-    XLSX.utils.json_to_sheet(data);
-
-
-
-
-
-
-
-
-    let wb =
-
-
-    XLSX.utils.book_new();
-
-
-
-
-
-
-
-
-    XLSX.utils.book_append_sheet(
-
-
-        wb,
-
-
-        ws,
-
-
-        "Template"
-
-
-
-    );
-
-
-
-
-
-
-
-
-    XLSX.writeFile(
-
-
-        wb,
-
-
-        name
-
-
-
-    );
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ========================================
-// IMPORT BUTTON HELPER
-// ========================================
-
-
-function clearExcelInput(id){
-
-
-
-    let el =
-
-
-    document
-
-    .getElementById(id);
-
-
-
-
-
-
-    if(el){
-
-
-
-        el.value="";
-
-
-
     }
 
 
 
 }
 
-
-
-
-
-
-
-
-
-// ========================================
-// EXCEL READY
-// ========================================
-
-
-console.log(
-
-"Excel Module Loaded"
-
-);
-
-// ========================================
-// COMPATIBILITY BUTTON
-// ========================================
-
-
-function uploadOSS(){
-
-    return uploadOSSExcel();
-
-}
-
-
-
-function uploadIMS(){
-
-    return uploadIMSExcel();
-
-}
