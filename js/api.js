@@ -2222,3 +2222,122 @@ console.log(
 "API FULL MODULE V2 READY"
 
 );
+
+// ========================================
+// COMPATIBILITY PATCH
+// OSS IMS OLD MODULE SUPPORT
+// ========================================
+
+
+
+// ========================================
+// MASTER COMPATIBILITY
+// ========================================
+
+
+async function getMasterAPI(){
+
+
+    return await getMasterData();
+
+
+}
+
+
+
+
+
+// ========================================
+// DASHBOARD COMPATIBILITY
+// ========================================
+
+
+async function getDashboardAPI(){
+
+
+    return await getDashboard();
+
+
+}
+
+
+
+
+
+// ========================================
+// API SUCCESS HELPER
+// ========================================
+
+
+function apiSuccess(result){
+
+
+    return (
+
+        result &&
+
+        result.success === true
+
+    );
+
+
+}
+
+
+
+
+
+// ========================================
+// API MESSAGE HELPER
+// ========================================
+
+
+function apiMessage(result){
+
+
+    if(!result){
+
+
+        return "Response kosong";
+
+
+    }
+
+
+    return result.message || "";
+
+
+
+}
+
+
+
+
+
+// ========================================
+// REFRESH COMPATIBILITY
+// ========================================
+
+
+async function refreshAPI(){
+
+
+    return await refreshAll();
+
+
+}
+
+
+
+
+
+// ========================================
+// FINAL CONNECTOR
+// ========================================
+
+
+console.log(
+
+"API COMPATIBILITY PATCH ACTIVE"
+
+);
