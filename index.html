@@ -18,7 +18,7 @@
 
 
 <link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+href="https://cdn.jsdelivr.net/npm/bootstrap-icons@11.3.3/font/bootstrap-icons.min.css">
 
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -87,6 +87,7 @@ Dashboard
 
 
 
+
 <a href="oss.html">
 
 <i class="bi bi-folder2-open"></i>
@@ -98,6 +99,7 @@ OSS
 
 
 
+
 <a href="ims.html">
 
 <i class="bi bi-journal-text"></i>
@@ -105,6 +107,7 @@ OSS
 IMS
 
 </a>
+
 
 
 
@@ -142,7 +145,7 @@ Connected
 
 <small>
 
-Version 3.0
+Version 4.0
 
 </small>
 
@@ -159,10 +162,8 @@ Version 3.0
 
 
 
-
-
 <!-- ========================= -->
-<!-- MAIN -->
+<!-- MAIN CONTENT -->
 <!-- ========================= -->
 
 
@@ -231,9 +232,7 @@ Refresh
 
 
 
-
-
-<!-- SUMMARY -->
+<!-- SUMMARY CARD -->
 
 
 <section class="summary-grid">
@@ -270,6 +269,7 @@ Loading...
 
 
 </div>
+
 
 
 
@@ -387,8 +387,6 @@ Loading...
 
 
 
-
-
 </section>
 
 
@@ -396,10 +394,14 @@ Loading...
 
 
 
-<!-- DASHBOARD GRID -->
+
+<!-- ========================= -->
+<!-- DASHBOARD CONTENT -->
+<!-- ========================= -->
 
 
 <section class="dashboard-grid">
+
 
 
 <div class="card chart-card">
@@ -429,6 +431,7 @@ Realtime
 
 
 
+
 <div class="chart-container">
 
 
@@ -440,6 +443,8 @@ Realtime
 
 
 </div>
+
+
 
 
 
@@ -467,6 +472,8 @@ Ringkasan Status
 
 
 
+
+
 <div class="status-item">
 
 
@@ -476,7 +483,7 @@ Ringkasan Status
 <span class="status-dot success"></span>
 
 
-<span>Sudah</span>
+<span>Selesai</span>
 
 
 </div>
@@ -492,6 +499,9 @@ Loading...
 
 
 </div>
+
+
+
 
 
 
@@ -523,31 +533,288 @@ Loading...
 
 </div>
 
-<!-- ========================= -->
-<!-- LANJUTAN INDEX.HTML PART 2 -->
-<!-- ========================= -->
-
-        <!-- ========================= -->
-        <!-- FOOTER -->
-        <!-- ========================= -->
-
-        <footer class="footer">
-
-            <span>
-                © 2026 OSS IMS Monitoring System
-            </span>
-
-            <span>
-                Powered by Google Apps Script
-            </span>
-
-        </footer>
 
 
-    </main>
+
+
+
+
+
+<div class="status-item">
+
+
+<div class="status-left">
+
+
+<span class="status-dot warning"></span>
+
+
+<span>Revisi</span>
 
 
 </div>
+
+
+
+<strong id="revisi">
+
+Loading...
+
+</strong>
+
+
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+
+</section>
+
+        
+<!-- ========================= -->
+<!-- SYSTEM MONITOR -->
+<!-- ========================= -->
+
+
+<section class="card system-monitor">
+
+
+<div class="card-header">
+
+
+<h3>
+
+<i class="bi bi-cpu"></i>
+
+System Monitor
+
+</h3>
+
+
+
+<span id="systemHealth">
+
+Checking...
+
+</span>
+
+
+
+</div>
+
+
+
+
+
+<div class="system-grid">
+
+
+
+
+
+<div class="system-item">
+
+
+<i class="bi bi-cloud-check"></i>
+
+
+<div>
+
+
+<span>
+API Status
+</span>
+
+
+<strong id="apiStatus">
+
+Checking...
+
+</strong>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+<div class="system-item">
+
+
+<i class="bi bi-arrow-repeat"></i>
+
+
+<div>
+
+
+<span>
+Last Refresh
+</span>
+
+
+<strong id="lastUpdate">
+
+-
+
+</strong>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+<div class="system-item">
+
+
+<i class="bi bi-database-check"></i>
+
+
+<div>
+
+
+<span>
+Cache Data
+</span>
+
+
+<strong id="cacheStatus">
+
+-
+
+</strong>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+<div class="system-item">
+
+
+<i class="bi bi-speedometer2"></i>
+
+
+<div>
+
+
+<span>
+API Response
+</span>
+
+
+<strong id="apiSpeed">
+
+-
+
+</strong>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+
+</section>
+
+
+
+
+
+
+
+
+<!-- ========================= -->
+<!-- FOOTER -->
+<!-- ========================= -->
+
+
+<footer class="footer">
+
+
+<span>
+
+© 2026 OSS IMS Monitoring System
+
+</span>
+
+
+
+<span>
+
+Powered by Google Apps Script
+
+</span>
+
+
+
+</footer>
+
+
+
+
+
+</main>
+
+
+</div>
+
+
+
+
+
+
+
+
+<!-- ========================= -->
+<!-- TOAST -->
+<!-- ========================= -->
+
+
+<div id="toast" class="toast">
+
+
+</div>
+
+
+
 
 
 
@@ -560,12 +827,12 @@ Loading...
 
 <script src="js/api.js"></script>
 
+<script src="js/dashboard.js"></script>
+
 <script src="js/realtime.js"></script>
 
-<script src="js/dashboard.js"></script>
 
 
 </body>
 
 </html>
-    
