@@ -1,10 +1,14 @@
 // ========================================
-// IMS MANAGEMENT SYSTEM V5
+// IMS MANAGEMENT SYSTEM V6
 // API JS V4 COMPATIBLE
 // PART 1
-// CORE + CRUD IMS
+// CORE + DATA LOADER + CRUD CORE
 // ========================================
 
+
+// ========================================
+// GLOBAL STATE
+// ========================================
 
 let IMS_DATA = [];
 
@@ -17,14 +21,66 @@ let IMS_LIMIT = 100;
 let IMS_TOTAL = 0;
 
 
+let IMS_SYSTEM_STATUS = {
+
+    online:false,
+
+    lastSync:null,
+
+    loadTime:0,
+
+    totalData:0
+
+};
+
+
+
 
 
 
 // ========================================
-// LOAD IMS
+// LOADING IMS STATUS
+// ========================================
+
+function showLoadingIMS(state){
+
+
+    let el=document.getElementById(
+        "imsLoading"
+    );
+
+
+    if(!el){
+        return;
+    }
+
+
+    el.innerText = state
+
+    ? "⏳ Loading IMS..."
+
+    : "🟢 IMS Ready";
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// LOAD IMS DATA
 // ========================================
 
 async function loadIMS(){
+
+
+    let startTime = performance.now();
+
 
 
     try{
@@ -34,7 +90,7 @@ async function loadIMS(){
 
 
 
-        const result = await apiRequest(
+        let result = await apiRequest(
 
             "getIMS",
 
@@ -50,14 +106,44 @@ async function loadIMS(){
 
 
 
-        if(!result.success){
 
+        if(
+
+            !result
+
+            ||
+
+            !result.success
+
+        ){
 
             throw new Error(
 
-                result.message
+                result?.message
+
+                ||
+
+                "Gagal mengambil data IMS"
 
             );
+
+        }
+
+
+
+
+
+
+        let data = result.data || [];
+
+
+
+
+
+        if(!Array.isArray(data)){
+
+
+            data=[];
 
 
         }
@@ -66,25 +152,53 @@ async function loadIMS(){
 
 
 
-        const data = normalizeAPI(
 
-            result.data
+        IMS_DATA = data;
+
+
+
+        IMS_TOTAL = IMS_DATA.length;
+
+
+
+
+
+
+        IMS_SYSTEM_STATUS.online=true;
+
+
+        IMS_SYSTEM_STATUS.lastSync=
+
+        new Date()
+
+        .toLocaleString(
+
+            "id-ID"
 
         );
 
 
 
+        IMS_SYSTEM_STATUS.loadTime=
 
-        IMS_DATA =
+        (
 
-        extractArray(data);
+            performance.now()
+
+            -
+
+            startTime
+
+        ).toFixed(2);
 
 
 
-
-        IMS_TOTAL =
+        IMS_SYSTEM_STATUS.totalData=
 
         IMS_DATA.length;
+
+
+
 
 
 
@@ -94,7 +208,6 @@ async function loadIMS(){
             IMS_DATA
 
         );
-
 
 
 
@@ -114,6 +227,7 @@ async function loadIMS(){
     }
 
 
+
     catch(error){
 
 
@@ -128,11 +242,21 @@ async function loadIMS(){
 
 
 
+        IMS_SYSTEM_STATUS.online=false;
+
+
+
+        IMS_DATA=[];
+
+
+
         renderIMS([]);
 
 
 
+
     }
+
 
 
     finally{
@@ -165,9 +289,7 @@ function renderIMS(data){
 
 
 
-    const table =
-
-    document.getElementById(
+    let table = document.getElementById(
 
         "imsData"
 
@@ -175,10 +297,12 @@ function renderIMS(data){
 
 
 
+    if(!table){
 
-    if(!table)
+        return;
 
-    return;
+    }
+
 
 
 
@@ -193,6 +317,7 @@ function renderIMS(data){
         data.length===0
 
     ){
+
 
 
         table.innerHTML=`
@@ -220,7 +345,6 @@ function renderIMS(data){
 
 
 
-
     let html="";
 
 
@@ -228,7 +352,6 @@ function renderIMS(data){
 
 
     data.forEach((item,index)=>{
-
 
 
         html+=`
@@ -299,6 +422,7 @@ function renderIMS(data){
 
 
 
+
         <button
 
         class="btn delete"
@@ -308,6 +432,7 @@ function renderIMS(data){
         🗑 Hapus
 
         </button>
+
 
 
         </td>
@@ -354,49 +479,37 @@ async function saveIMS(){
 
 
         wo:getValueIMS(
-
             "wo"
-
         ),
 
 
 
         reference_code:getValueIMS(
-
             "imsReferenceCode"
-
         ),
 
 
 
         quotation:getValueIMS(
-
             "quotation"
-
         ),
 
 
 
         job_name:getValueIMS(
-
             "jobName"
-
         ),
 
 
 
         status:getValueIMS(
-
             "imsStatus"
-
         ),
 
 
 
         bulan:getValueIMS(
-
             "imsMonth"
-
         )
 
 
@@ -439,8 +552,8 @@ async function saveIMS(){
 
 
 
-    try{
 
+    try{
 
 
         let result;
@@ -448,7 +561,6 @@ async function saveIMS(){
 
 
         if(IMS_EDIT_ID){
-
 
 
             result = await apiRequest(
@@ -466,11 +578,9 @@ async function saveIMS(){
             );
 
 
-
         }
 
         else{
-
 
 
             result = await apiRequest(
@@ -482,9 +592,7 @@ async function saveIMS(){
             );
 
 
-
         }
-
 
 
 
@@ -494,27 +602,22 @@ async function saveIMS(){
         if(result.success){
 
 
-
-            closeIMS();
-
-
-
             resetIMSForm();
 
 
-
             await loadIMS();
-
 
 
         }
 
 
 
+
+
     }
 
 
-    catch(e){
+    catch(error){
 
 
 
@@ -522,7 +625,7 @@ async function saveIMS(){
 
             "SAVE IMS ERROR",
 
-            e
+            error
 
         );
 
@@ -536,6 +639,7 @@ async function saveIMS(){
 
 
     }
+
 
 
 
@@ -561,83 +665,69 @@ function editIMS(index){
 
 
 
+    if(!item){
 
-    if(!item)
+        return;
 
-    return;
-
-
-
+    }
 
 
-    IMS_EDIT_ID = item.id;
+
+
+
+    IMS_EDIT_ID=item.id;
 
 
 
 
     setValueIMS(
-
         "wo",
-
         item.wo
-
     );
 
 
 
     setValueIMS(
-
         "imsReferenceCode",
-
         item.reference_code
-
     );
 
 
 
     setValueIMS(
-
         "quotation",
-
         item.quotation
-
     );
 
 
 
     setValueIMS(
-
         "jobName",
-
         item.job_name
-
     );
 
 
 
     setValueIMS(
-
         "imsStatus",
-
         item.status
-
     );
 
 
 
     setValueIMS(
-
         "imsMonth",
-
         item.bulan
-
     );
 
 
 
 
+    if(typeof openAddIMS==="function"){
 
-    openAddIMS();
+        openAddIMS();
+
+    }
 
 
 
@@ -663,10 +753,11 @@ async function removeIMS(index){
 
 
 
-    if(!item)
+    if(!item){
 
-    return;
+        return;
 
+    }
 
 
 
@@ -675,9 +766,12 @@ async function removeIMS(index){
 
         "Hapus data IMS?"
 
-    ))
+    )){
 
-    return;
+        return;
+
+    }
+
 
 
 
@@ -701,10 +795,13 @@ async function removeIMS(index){
 
 
 
+
     if(result.success){
 
 
+
         await loadIMS();
+
 
 
     }
@@ -728,19 +825,18 @@ async function removeIMS(index){
 function getValueIMS(id){
 
 
-
     let el=document.getElementById(id);
 
 
+    return el
 
-    return el ?
+    ?
 
     el.value.trim()
 
     :
 
     "";
-
 
 
 }
@@ -752,9 +848,7 @@ function getValueIMS(id){
 function setValueIMS(id,value){
 
 
-
     let el=document.getElementById(id);
-
 
 
     if(el){
@@ -764,7 +858,6 @@ function setValueIMS(id,value){
 
 
     }
-
 
 
 }
@@ -841,7 +934,6 @@ function resetIMSForm(){
 
 
 
-
 // ========================================
 // STATUS BADGE
 // ========================================
@@ -874,8 +966,11 @@ function statusBadge(status){
 
     }
 
-    else if(status==="Revisi"){
+    else if(
 
+        status==="Revisi"
+
+    ){
 
 
         cls="status-revisi";
@@ -887,10 +982,7 @@ function statusBadge(status){
 
 
 
-
-
     return `
-
 
     <span class="badge ${cls}">
 
@@ -898,9 +990,7 @@ function statusBadge(status){
 
     </span>
 
-
     `;
-
 
 
 }
@@ -911,18 +1001,16 @@ function statusBadge(status){
 
 
 
-
-
 console.log(
 
-"IMS JS V5 PART 1 READY"
+"IMS JS V6 PART 1 READY"
 
 );
 // ========================================
-// IMS MANAGEMENT SYSTEM V5
+// IMS MANAGEMENT SYSTEM V6
 // API JS V4 COMPATIBLE
 // PART 2
-// FILTER + PAGINATION + EXCEL + REFRESH
+// SEARCH + FILTER + SUMMARY + EXCEL
 // ========================================
 
 
@@ -933,9 +1021,7 @@ console.log(
 function searchIMS(){
 
 
-    let keyword =
-
-    getValueIMS(
+    let keyword = getValueIMS(
 
         "searchIMS"
 
@@ -952,54 +1038,51 @@ function searchIMS(){
 
         return (
 
+            String(item.wo || "")
 
+            .toLowerCase()
 
-        String(item.wo || "")
-
-        .toLowerCase()
-
-        .includes(keyword)
-
-
-
-        ||
+            .includes(keyword)
 
 
 
-        String(item.reference_code || "")
-
-        .toLowerCase()
-
-        .includes(keyword)
+            ||
 
 
 
-        ||
+            String(item.reference_code || "")
+
+            .toLowerCase()
+
+            .includes(keyword)
 
 
 
-        String(item.customer || "")
-
-        .toLowerCase()
-
-        .includes(keyword)
+            ||
 
 
 
-        ||
+            String(item.customer || "")
+
+            .toLowerCase()
+
+            .includes(keyword)
 
 
 
-        String(item.job_name || "")
+            ||
 
-        .toLowerCase()
 
-        .includes(keyword)
+
+            String(item.job_name || "")
+
+            .toLowerCase()
+
+            .includes(keyword)
 
 
 
         );
-
 
 
     });
@@ -1023,16 +1106,14 @@ function searchIMS(){
 
 
 // ========================================
-// FILTER STATUS + BULAN
+// FILTER IMS
 // ========================================
 
 function filterIMS(){
 
 
 
-    let status =
-
-    getValueIMS(
+    let status = getValueIMS(
 
         "statusFilter"
 
@@ -1040,13 +1121,13 @@ function filterIMS(){
 
 
 
-    let bulan =
-
-    getValueIMS(
+    let bulan = getValueIMS(
 
         "monthFilterIMS"
 
     );
+
+
 
 
 
@@ -1057,7 +1138,6 @@ function filterIMS(){
 
 
         let statusOK =
-
 
         !status
 
@@ -1070,8 +1150,8 @@ function filterIMS(){
 
 
 
-        let bulanOK =
 
+        let bulanOK =
 
         !bulan
 
@@ -1103,6 +1183,7 @@ function filterIMS(){
 
 
 
+
     renderIMS(result);
 
 
@@ -1118,16 +1199,14 @@ function filterIMS(){
 
 
 // ========================================
-// GENERATE BULAN FILTER
+// GENERATE MONTH FILTER
 // ========================================
 
 function generateMonthFilterIMS(){
 
 
 
-    let select =
-
-    document.getElementById(
+    let select=document.getElementById(
 
         "monthFilterIMS"
 
@@ -1135,19 +1214,22 @@ function generateMonthFilterIMS(){
 
 
 
-    if(!select)
+    if(!select){
 
-    return;
+        return;
 
-
-
-
+    }
 
 
 
-    let list = [
 
-        ...new Set(
+
+
+    let bulanList=[
+
+        ...
+
+        new Set(
 
             IMS_DATA.map(
 
@@ -1158,6 +1240,7 @@ function generateMonthFilterIMS(){
         )
 
     ];
+
 
 
 
@@ -1182,15 +1265,14 @@ function generateMonthFilterIMS(){
 
 
 
+    bulanList.forEach(bulan=>{
 
-    list.forEach(bulan=>{
 
 
         if(bulan){
 
 
-            html += `
-
+            html+=`
 
             <option value="${bulan}">
 
@@ -1203,6 +1285,7 @@ function generateMonthFilterIMS(){
 
 
         }
+
 
 
     });
@@ -1228,16 +1311,131 @@ function generateMonthFilterIMS(){
 
 
 // ========================================
-// UPDATE TOTAL IMS
+// SUMMARY IMS
+// ========================================
+
+function getIMSSummary(){
+
+
+
+    let total = IMS_DATA.length;
+
+
+
+
+
+    let progress = IMS_DATA.filter(x=>
+
+
+        x.status==="Progress"
+
+
+    ).length;
+
+
+
+
+
+
+    let selesai = IMS_DATA.filter(x=>
+
+
+        x.status==="Done"
+
+        ||
+
+        x.status==="Closed"
+
+        ||
+
+        x.status==="Approved"
+
+
+    ).length;
+
+
+
+
+
+
+
+    let revisi = IMS_DATA.filter(x=>
+
+
+        x.status==="Revisi"
+
+
+    ).length;
+
+
+
+
+
+
+
+    let belum = IMS_DATA.filter(x=>
+
+
+        !x.status
+
+        ||
+
+        x.status==="Belum"
+
+
+    ).length;
+
+
+
+
+
+
+
+    return {
+
+
+        total,
+
+        progress,
+
+        selesai,
+
+        revisi,
+
+        belum
+
+
+
+    };
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// UPDATE IMS COUNTER
 // ========================================
 
 function updateTotalIMS(){
 
 
 
-    let total =
+    let data=getIMSSummary();
 
-    document.getElementById(
+
+
+
+
+
+    let el=document.getElementById(
 
         "totalIMS"
 
@@ -1245,15 +1443,12 @@ function updateTotalIMS(){
 
 
 
+    if(el){
 
-    if(total){
 
+        el.innerText=
 
-        total.innerText =
-
-        IMS_DATA.length +
-
-        " Data";
+        data.total+" Data";
 
 
     }
@@ -1263,44 +1458,7 @@ function updateTotalIMS(){
 
 
 
-    let revisi =
-
-    document.getElementById(
-
-        "revisionIMS"
-
-    );
-
-
-
-
-
-    if(revisi){
-
-
-
-        revisi.innerText =
-
-
-        IMS_DATA.filter(x=>
-
-            x.status==="Revisi"
-
-        ).length;
-
-
-
-    }
-
-
-
-
-
-
-
-    let selesai =
-
-    document.getElementById(
+    let done=document.getElementById(
 
         "doneIMS"
 
@@ -1308,26 +1466,12 @@ function updateTotalIMS(){
 
 
 
-
-    if(selesai){
-
+    if(done){
 
 
-        selesai.innerText =
+        done.innerText=
 
-
-        IMS_DATA.filter(x=>
-
-
-            x.status==="Done"
-
-            ||
-
-            x.status==="Closed"
-
-
-        ).length;
-
+        data.selesai;
 
 
     }
@@ -1335,164 +1479,54 @@ function updateTotalIMS(){
 
 
 
-}
 
 
 
+    let progress=document.getElementById(
 
-
-
-
-
-
-// ========================================
-// PAGINATION
-// ========================================
-
-function nextIMSPage(){
-
-
-
-    let max = Math.ceil(
-
-
-        IMS_TOTAL /
-
-        IMS_LIMIT
-
+        "progressIMS"
 
     );
 
 
 
+    if(progress){
 
 
-    if(IMS_PAGE < max){
+        progress.innerText=
 
-
-
-        IMS_PAGE++;
-
-
-
-        loadIMS();
-
+        data.progress;
 
 
     }
 
 
 
-}
 
 
 
 
+    let revisi=document.getElementById(
+
+        "revisionIMS"
+
+    );
 
 
 
-
-function prevIMSPage(){
-
+    if(revisi){
 
 
-    if(IMS_PAGE > 1){
+        revisi.innerText=
 
-
-
-        IMS_PAGE--;
-
-
-
-        loadIMS();
-
+        data.revisi;
 
 
     }
 
 
 
-}
 
-
-
-
-
-
-
-
-function renderIMSPagination(){
-
-
-
-    let el =
-
-    document.getElementById(
-
-        "imsPagination"
-
-    );
-
-
-
-
-    if(!el)
-
-    return;
-
-
-
-
-
-
-
-    let totalPage = Math.ceil(
-
-        IMS_TOTAL /
-
-        IMS_LIMIT
-
-    );
-
-
-
-
-
-
-
-    el.innerHTML=`
-
-
-    <button onclick="prevIMSPage()">
-
-    ◀
-
-    </button>
-
-
-
-    <span>
-
-    ${IMS_PAGE}
-
-    /
-
-    ${totalPage || 1}
-
-    </span>
-
-
-
-
-    <button onclick="nextIMSPage()">
-
-    ▶
-
-    </button>
-
-
-
-    `;
 
 
 
@@ -1524,8 +1558,8 @@ function sortIMS(field){
 
 
 
-    result.sort((a,b)=>{
 
+    result.sort((a,b)=>{
 
 
         return String(
@@ -1545,8 +1579,8 @@ function sortIMS(field){
         );
 
 
-
     });
+
 
 
 
@@ -1594,10 +1628,10 @@ async function refreshIMS(){
 
 
 // ========================================
-// IMPORT EXCEL IMS
+// EXPORT IMS EXCEL
 // ========================================
 
-function importIMSExcel(file){
+function exportIMSExcel(){
 
 
 
@@ -1622,7 +1656,150 @@ function importIMSExcel(file){
 
 
 
+    let rows = IMS_DATA.map(item=>({
+
+
+
+        WO:
+
+        item.wo || "",
+
+
+
+        Reference_Code:
+
+        item.reference_code || "",
+
+
+
+        Quotation:
+
+        item.quotation || "",
+
+
+
+        Job_Name:
+
+        item.job_name || "",
+
+
+
+        Status:
+
+        item.status || "",
+
+
+
+        Bulan:
+
+        item.bulan || ""
+
+
+
+    }));
+
+
+
+
+
+
+
+    let ws=XLSX.utils.json_to_sheet(
+
+        rows
+
+    );
+
+
+
+
+
+    let wb=XLSX.utils.book_new();
+
+
+
+
+
+
+    XLSX.utils.book_append_sheet(
+
+        wb,
+
+        ws,
+
+        "IMS"
+
+    );
+
+
+
+
+
+
+
+    XLSX.writeFile(
+
+        wb,
+
+        "DATA_IMS.xlsx"
+
+    );
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// IMPORT IMS EXCEL
+// ========================================
+
+function importIMSExcel(file){
+
+
+
+    if(!file){
+
+        return;
+
+    }
+
+
+
+
+
+
+    if(typeof XLSX==="undefined"){
+
+
+        alert(
+
+        "Library Excel belum aktif"
+
+        );
+
+
+        return;
+
+
+    }
+
+
+
+
+
+
+
+
     let reader=new FileReader();
+
 
 
 
@@ -1632,8 +1809,7 @@ function importIMSExcel(file){
 
 
 
-        let wb=XLSX.read(
-
+        let workbook=XLSX.read(
 
             new Uint8Array(
 
@@ -1647,7 +1823,6 @@ function importIMSExcel(file){
 
             }
 
-
         );
 
 
@@ -1656,11 +1831,9 @@ function importIMSExcel(file){
 
 
 
-        let ws=
+        let sheet=workbook.Sheets[
 
-        wb.Sheets[
-
-            wb.SheetNames[0]
+            workbook.SheetNames[0]
 
         ];
 
@@ -1670,11 +1843,9 @@ function importIMSExcel(file){
 
 
 
-        let rows =
+        let rows=XLSX.utils.sheet_to_json(
 
-        XLSX.utils.sheet_to_json(
-
-            ws
+            sheet
 
         );
 
@@ -1711,7 +1882,6 @@ function importIMSExcel(file){
 
 
         });
-
 
 
 
@@ -1768,143 +1938,18 @@ async function bulkIMSAPI(rows){
 
 
 // ========================================
-// EXPORT IMS EXCEL
-// ========================================
-
-function exportIMSExcel(){
-
-
-
-    if(typeof XLSX==="undefined")
-
-    return;
-
-
-
-
-
-
-    let rows = IMS_DATA.map(item=>({
-
-
-
-        WO:item.wo || "",
-
-
-
-        Reference_Code:
-
-        item.reference_code || "",
-
-
-
-        Quotation:
-
-        item.quotation || "",
-
-
-
-        Job_Name:
-
-        item.job_name || "",
-
-
-
-        Status:
-
-        item.status || "",
-
-
-
-        Bulan:
-
-        item.bulan || ""
-
-
-
-    }));
-
-
-
-
-
-
-
-
-    let ws=
-
-    XLSX.utils.json_to_sheet(
-
-        rows
-
-    );
-
-
-
-
-
-
-
-    let wb=
-
-    XLSX.utils.book_new();
-
-
-
-
-
-
-
-    XLSX.utils.book_append_sheet(
-
-        wb,
-
-        ws,
-
-        "IMS"
-
-    );
-
-
-
-
-
-
-
-    XLSX.writeFile(
-
-        wb,
-
-        "DATA_IMS.xlsx"
-
-    );
-
-
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ========================================
-// TEMPLATE EXCEL IMS
+// TEMPLATE EXCEL
 // ========================================
 
 function downloadIMSTemplate(){
 
 
 
-    if(typeof XLSX==="undefined")
+    if(typeof XLSX==="undefined"){
 
-    return;
+        return;
 
+    }
 
 
 
@@ -1916,15 +1961,21 @@ function downloadIMSTemplate(){
 
         wo:"WO001",
 
+
         reference_code:"REF001",
+
 
         quotation:"Q001",
 
+
         job_name:"Project",
+
 
         status:"Progress",
 
+
         bulan:"Januari"
+
 
 
     }];
@@ -1935,9 +1986,7 @@ function downloadIMSTemplate(){
 
 
 
-    let ws=
-
-    XLSX.utils.json_to_sheet(
+    let ws=XLSX.utils.json_to_sheet(
 
         data
 
@@ -1948,10 +1997,7 @@ function downloadIMSTemplate(){
 
 
 
-
-    let wb=
-
-    XLSX.utils.book_new();
+    let wb=XLSX.utils.book_new();
 
 
 
@@ -1968,7 +2014,6 @@ function downloadIMSTemplate(){
         "TEMPLATE"
 
     );
-
 
 
 
@@ -1996,292 +2041,26 @@ function downloadIMSTemplate(){
 
 console.log(
 
-"IMS JS V5 PART 2 READY"
+"IMS JS V6 PART 2 READY"
 
 );
-
 // ========================================
-// IMS MANAGEMENT SYSTEM V5
-// API.JS V3 COMPATIBLE
+// IMS MANAGEMENT SYSTEM V6
+// API JS V4 COMPATIBLE
 // PART 3
-// FILTER + DASHBOARD CONNECT + EXCEL
+// DASHBOARD CONNECT + SYNC + PAGINATION
 // ========================================
 
 
 // ========================================
-// GLOBAL FILTER
+// UPDATE DASHBOARD CONNECTION
 // ========================================
-
-function searchIMS(){
-
-
-    let keyword =
-
-    document
-
-    .getElementById(
-        "searchIMS"
-    )
-
-    ?.value
-
-    .toLowerCase()
-
-    || "";
-
-
-
-
-    let result = imsData.filter(item=>{
-
-
-        return (
-
-
-            String(item.wo || "")
-
-            .toLowerCase()
-
-            .includes(keyword)
-
-
-
-            ||
-
-
-
-            String(item.reference_code || "")
-
-            .toLowerCase()
-
-            .includes(keyword)
-
-
-
-            ||
-
-
-
-            String(item.customer || "")
-
-            .toLowerCase()
-
-            .includes(keyword)
-
-
-
-            ||
-
-
-
-            String(item.job_name || "")
-
-            .toLowerCase()
-
-            .includes(keyword)
-
-
-
-        );
-
-
-    });
-
-
-
-
-    tampilkanIMS(result);
-
-
-
-}
-
-
-
-
-
-
-
-
-// ========================================
-// SORT IMS
-// ========================================
-
-
-function sortIMS(field){
-
-
-    let result=[...imsData];
-
-
-
-    result.sort((a,b)=>{
-
-
-        return String(
-
-            a[field] || ""
-
-        )
-
-        .localeCompare(
-
-            String(
-
-                b[field] || ""
-
-            )
-
-        );
-
-
-    });
-
-
-
-    tampilkanIMS(result);
-
-
-
-}
-
-
-
-
-
-
-
-
-// ========================================
-// FILTER STATUS QUICK
-// ========================================
-
-
-function filterIMSStatus(status){
-
-
-
-    let result = imsData.filter(item=>{
-
-
-        return item.status === status;
-
-
-    });
-
-
-
-    tampilkanIMS(result);
-
-
-
-}
-
-
-
-
-
-
-
-
-// ========================================
-// SUMMARY IMS
-// ========================================
-
-
-function getIMSSummary(){
-
-
-
-    let total = imsData.length;
-
-
-
-    let progress = imsData.filter(x=>
-
-        x.status==="Progress"
-
-    ).length;
-
-
-
-
-    let selesai = imsData.filter(x=>
-
-        x.status==="Closed"
-
-        ||
-
-        x.status==="Done"
-
-    ).length;
-
-
-
-
-
-    let revisi = imsData.filter(x=>
-
-        x.status==="Revisi"
-
-    ).length;
-
-
-
-
-    let approved = imsData.filter(x=>
-
-        x.status==="Approved"
-
-    ).length;
-
-
-
-
-
-
-    return {
-
-
-        total:total,
-
-
-        progress:progress,
-
-
-        selesai:selesai,
-
-
-        revisi:revisi,
-
-
-        approved:approved
-
-
-    };
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ========================================
-// UPDATE DASHBOARD IMS
-// ========================================
-
 
 function updateIMSDashboard(){
 
 
-
     let data = getIMSSummary();
+
 
 
 
@@ -2296,7 +2075,7 @@ function updateIMSDashboard(){
 
     if(total){
 
-        total.innerText=data.total+" Data";
+        total.innerText = data.total;
 
     }
 
@@ -2307,7 +2086,7 @@ function updateIMSDashboard(){
 
     let progress = document.getElementById(
 
-        "progressIMS"
+        "progress"
 
     );
 
@@ -2324,9 +2103,10 @@ function updateIMSDashboard(){
 
 
 
+
     let revisi = document.getElementById(
 
-        "revisionIMS"
+        "revisi"
 
     );
 
@@ -2343,9 +2123,10 @@ function updateIMSDashboard(){
 
 
 
+
     let selesai = document.getElementById(
 
-        "doneIMS"
+        "selesai"
 
     );
 
@@ -2359,95 +2140,6 @@ function updateIMSDashboard(){
 
 
 
-
-}
-
-
-
-
-
-
-
-
-
-
-// ========================================
-// PATCH LOAD IMS
-// ========================================
-
-
-async function refreshIMSData(){
-
-
-    try{
-
-
-        showLoadingIMS(true);
-
-
-
-        const result = await getIMS();
-
-
-
-        imsData = result || [];
-
-
-
-        tampilkanIMS(
-
-            imsData
-
-        );
-
-
-
-        updateTotalIMS();
-
-
-
-        updateIMSDashboard();
-
-
-
-        generateMonthFilterIMS();
-
-
-
-        updateIMSInfo();
-
-
-
-    }
-
-
-
-    catch(error){
-
-
-        console.error(
-
-            "REFRESH IMS ERROR",
-
-            error
-
-        );
-
-
-    }
-
-
-
-    finally{
-
-
-        showLoadingIMS(false);
-
-
-    }
-
-
-
 }
 
 
@@ -2459,213 +2151,73 @@ async function refreshIMSData(){
 
 
 // ========================================
-// EXPORT IMS EXCEL
+// GET IMS DATA FOR DASHBOARD
 // ========================================
 
+function getIMSDataSummary(){
 
-function exportIMSExcel(){
 
 
+    return {
 
-    if(typeof XLSX==="undefined"){
 
+        total:
 
-        alert(
+        IMS_DATA.length,
 
-            "Excel library belum aktif"
 
-        );
 
+        progress:
 
-        return;
+        IMS_DATA.filter(x=>
 
+            x.status==="Progress"
 
-    }
+        ).length,
 
 
 
+        revisi:
 
+        IMS_DATA.filter(x=>
 
+            x.status==="Revisi"
 
-    let rows = imsData.map(item=>({
+        ).length,
 
 
 
-        WO:item.wo || "",
+        selesai:
 
+        IMS_DATA.filter(x=>
 
+            x.status==="Done"
 
-        Reference_Code:item.reference_code || "",
+            ||
 
+            x.status==="Closed"
 
+            ||
 
-        Quotation:item.quotation || "",
+            x.status==="Approved"
 
+        ).length,
 
 
-        Job_Name:item.job_name || "",
 
+        belum:
 
+        IMS_DATA.filter(x=>
 
-        Status:item.status || "",
+            !x.status
 
-
-
-        Bulan:item.bulan || ""
-
-
-
-    }));
-
-
-
-
-
-
-    let ws = XLSX.utils.json_to_sheet(rows);
-
-
-
-
-    let wb = XLSX.utils.book_new();
-
-
-
-
-    XLSX.utils.book_append_sheet(
-
-        wb,
-
-        ws,
-
-        "IMS"
-
-    );
-
-
-
-
-
-    XLSX.writeFile(
-
-        wb,
-
-        "DATA_IMS.xlsx"
-
-    );
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ========================================
-// IMPORT IMS EXCEL V5
-// ========================================
-
-
-function importIMSExcelV5(file){
-
-
-
-    if(!file){
-
-        return;
-
-    }
-
-
-
-
-    let reader = new FileReader();
-
-
-
-
-    reader.onload=function(e){
-
-
-
-        let workbook = XLSX.read(
-
-            new Uint8Array(
-
-                e.target.result
-
-            ),
-
-            {
-
-                type:"array"
-
-            }
-
-        );
-
-
-
-
-
-        let sheet = workbook.Sheets[
-
-            workbook.SheetNames[0]
-
-        ];
-
-
-
-
-
-
-        let rows = XLSX.utils.sheet_to_json(
-
-            sheet
-
-        );
-
-
-
-
-
-
-
-        bulkAddIMSAPI(rows)
-
-        .then(()=>{
-
-
-            alert(
-
-            "Import IMS berhasil"
-
-            );
-
-
-            refreshIMSData();
-
-
-
-        });
+        ).length
 
 
 
     };
 
 
-
-
-
-    reader.readAsArrayBuffer(file);
-
-
-
 }
 
 
@@ -2677,159 +2229,39 @@ function importIMSExcelV5(file){
 
 
 // ========================================
-// TEMPLATE IMS
+// SYNC KE DASHBOARD
 // ========================================
 
+async function syncIMSData(){
 
-function downloadIMSTemplate(){
-
-
-
-    if(typeof XLSX==="undefined")
-
-    return;
-
-
-
-
-    let data=[{
-
-
-        wo:"WO001",
-
-
-        reference_code:"REF001",
-
-
-        quotation:"Q001",
-
-
-        job_name:"Project",
-
-
-        status:"Progress",
-
-
-        bulan:"Januari"
-
-
-
-    }];
-
-
-
-
-
-
-    let ws=XLSX.utils.json_to_sheet(data);
-
-
-
-    let wb=XLSX.utils.book_new();
-
-
-
-
-    XLSX.utils.book_append_sheet(
-
-        wb,
-
-        ws,
-
-        "TEMPLATE"
-
-    );
-
-
-
-
-
-    XLSX.writeFile(
-
-        wb,
-
-        "TEMPLATE_IMS.xlsx"
-
-    );
-
-
-
-}
-
-
-
-
-
-
-
-
-
-console.log(
-
-"IMS JS V5 PART 3 READY"
-
-);
-// ========================================
-// IMS MANAGEMENT SYSTEM V5
-// API.JS V3 COMPATIBLE
-// PART 4
-// FINAL SYSTEM + REALTIME + AUTO SYNC
-// ========================================
-
-
-// ========================================
-// SYSTEM STATE
-// ========================================
-
-let IMS_SYSTEM_READY = false;
-
-let IMS_TIMER = null;
-
-
-
-
-
-
-
-
-// ========================================
-// INIT IMS SYSTEM
-// ========================================
-
-
-async function initIMSSystem(){
 
 
     try{
 
 
-        console.log(
 
-        "START IMS SYSTEM"
-
-        );
+        await loadIMS();
 
 
 
-        await checkIMSAPI();
+
+        if(typeof loadDashboard==="function"){
 
 
 
-        await refreshIMSData();
+            await loadDashboard();
 
 
 
-        startIMSRealtime();
+        }
 
 
-
-        IMS_SYSTEM_READY=true;
 
 
 
         console.log(
 
-        "IMS SYSTEM READY"
+        "IMS DASHBOARD SYNC OK"
 
         );
 
@@ -2845,7 +2277,7 @@ async function initIMSSystem(){
 
         console.error(
 
-        "IMS INIT ERROR",
+        "IMS DASHBOARD SYNC ERROR",
 
         error
 
@@ -2856,6 +2288,7 @@ async function initIMSSystem(){
     }
 
 
+
 }
 
 
@@ -2867,11 +2300,172 @@ async function initIMSSystem(){
 
 
 // ========================================
-// CHECK API IMS
+// PAGINATION
 // ========================================
 
+function nextIMSPage(){
 
-async function checkIMSAPI(){
+
+
+    let maxPage=Math.ceil(
+
+        IMS_TOTAL /
+
+        IMS_LIMIT
+
+    );
+
+
+
+
+
+    if(IMS_PAGE < maxPage){
+
+
+
+        IMS_PAGE++;
+
+
+
+        loadIMS();
+
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+function prevIMSPage(){
+
+
+
+    if(IMS_PAGE > 1){
+
+
+
+        IMS_PAGE--;
+
+
+
+        loadIMS();
+
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+function renderIMSPagination(){
+
+
+
+    let el=document.getElementById(
+
+        "imsPagination"
+
+    );
+
+
+
+    if(!el){
+
+        return;
+
+    }
+
+
+
+
+
+
+
+    let totalPage=Math.ceil(
+
+        IMS_TOTAL /
+
+        IMS_LIMIT
+
+    );
+
+
+
+
+
+
+    el.innerHTML=`
+
+
+    <button onclick="prevIMSPage()">
+
+    ◀
+
+    </button>
+
+
+
+    <span>
+
+    ${IMS_PAGE}
+
+    /
+
+    ${totalPage || 1}
+
+    </span>
+
+
+
+    <button onclick="nextIMSPage()">
+
+    ▶
+
+    </button>
+
+
+
+    `;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// FULL LOAD IMS
+// ========================================
+
+async function refreshIMSData(){
+
+
+
+    let start=performance.now();
 
 
 
@@ -2879,34 +2473,38 @@ async function checkIMSAPI(){
 
 
 
-        let result = await apiRequest(
-
-            "test",
-
-            {}
-
-        );
+        showLoadingIMS(true);
 
 
 
 
-        if(result.success){
+
+        await loadIMS();
 
 
 
-            console.log(
 
-            "IMS API ONLINE"
 
-            );
+        updateIMSDashboard();
 
 
 
-        }
+
+
+        IMS_SYSTEM_STATUS.loadTime=
+
+        (
+
+            performance.now()
+
+            -
+
+            start
+
+        ).toFixed(2);
 
 
 
-        return result;
 
 
 
@@ -2914,86 +2512,30 @@ async function checkIMSAPI(){
 
 
 
-    catch(e){
+    catch(error){
 
 
 
         console.error(
 
-        "IMS API ERROR",
+        "REFRESH IMS ERROR",
 
-        e
+        error
 
         );
 
 
-        return false;
 
 
     }
 
 
 
-}
+    finally{
 
 
 
-
-
-
-
-
-
-// ========================================
-// REALTIME IMS
-// ========================================
-
-
-function startIMSRealtime(){
-
-
-
-    stopIMSRealtime();
-
-
-
-
-    IMS_TIMER=setInterval(()=>{
-
-
-        refreshIMSData();
-
-
-
-    },60000);
-
-
-
-}
-
-
-
-
-
-
-
-function stopIMSRealtime(){
-
-
-
-    if(IMS_TIMER){
-
-
-
-        clearInterval(
-
-            IMS_TIMER
-
-        );
-
-
-
-        IMS_TIMER=null;
+        showLoadingIMS(false);
 
 
 
@@ -3012,75 +2554,8 @@ function stopIMSRealtime(){
 
 
 // ========================================
-// SYNC IMS DONE
+// GET ALL IMS DATA
 // ========================================
-
-
-async function syncIMSData(){
-
-
-
-    try{
-
-
-
-        await refreshIMSData();
-
-
-
-        if(typeof loadDashboard==="function"){
-
-
-            await loadDashboard();
-
-
-        }
-
-
-
-        console.log(
-
-        "IMS SYNC COMPLETE"
-
-        );
-
-
-
-    }
-
-
-
-    catch(e){
-
-
-
-        console.error(
-
-        "IMS SYNC ERROR",
-
-        e
-
-        );
-
-
-    }
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ========================================
-// GET ALL IMS
-// ========================================
-
 
 async function getAllIMSData(){
 
@@ -3095,6 +2570,8 @@ async function getAllIMSData(){
 
 
 
+
+
     while(true){
 
 
@@ -3105,7 +2582,7 @@ async function getAllIMSData(){
 
             {
 
-                page:page,
+                page,
 
                 limit:100
 
@@ -3116,20 +2593,21 @@ async function getAllIMSData(){
 
 
 
+
+
         if(
 
             !response.success
 
             ||
 
-            !response.data
+            !Array.isArray(response.data)
 
         ){
 
 
 
             break;
-
 
 
         }
@@ -3139,11 +2617,8 @@ async function getAllIMSData(){
 
 
 
-        if(
 
-            response.data.length===0
-
-        ){
+        if(response.data.length===0){
 
 
 
@@ -3152,7 +2627,6 @@ async function getAllIMSData(){
 
 
         }
-
 
 
 
@@ -3168,11 +2642,10 @@ async function getAllIMSData(){
 
 
 
-        if(
 
-            response.data.length < 100
 
-        ){
+
+        if(response.data.length < 100){
 
 
 
@@ -3197,6 +2670,7 @@ async function getAllIMSData(){
 
 
 
+
     return result;
 
 
@@ -3212,15 +2686,976 @@ async function getAllIMSData(){
 
 
 // ========================================
-// BACKUP IMS EXCEL FULL
+// DUPLICATE CHECK
 // ========================================
 
+function checkDuplicateIMS(ref){
+
+
+
+    return IMS_DATA.some(item=>{
+
+
+        return String(
+
+            item.reference_code
+
+        )
+
+        ===
+
+        String(ref);
+
+
+
+    });
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// DELETE MULTIPLE IMS
+// ========================================
+
+async function deleteMultipleIMS(ids){
+
+
+
+    if(!Array.isArray(ids)){
+
+
+
+        return;
+
+
+
+    }
+
+
+
+
+
+
+    for(let id of ids){
+
+
+
+        await apiRequest(
+
+            "deleteIMS",
+
+            {
+
+                id:id
+
+            }
+
+        );
+
+
+
+    }
+
+
+
+
+
+
+
+    await loadIMS();
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// PRINT IMS
+// ========================================
+
+function printIMS(){
+
+
+
+    window.print();
+
+
+
+}
+
+
+
+
+
+
+
+
+console.log(
+
+"IMS JS V6 PART 3 READY"
+
+);
+
+// ========================================
+// IMS MANAGEMENT SYSTEM V6
+// API JS V4 COMPATIBLE
+// PART 4A
+// FINAL SYSTEM + REALTIME + AUTO SYNC
+// ========================================
+
+
+// ========================================
+// SYSTEM STATE
+// ========================================
+
+let IMS_SYSTEM_READY = false;
+
+let IMS_TIMER = null;
+
+let IMS_LAST_UPDATE = null;
+
+let IMS_API_STATUS = false;
+
+
+
+
+
+
+// ========================================
+// INIT IMS SYSTEM
+// ========================================
+
+async function initIMSSystem(){
+
+
+    try{
+
+
+        console.log(
+            "START IMS SYSTEM V6"
+        );
+
+
+
+        await checkIMSAPI();
+
+
+
+        await refreshIMSData();
+
+
+
+
+        startIMSRealtime();
+
+
+
+
+        IMS_SYSTEM_READY = true;
+
+
+
+        updateIMSSystemStatus();
+
+
+
+        console.log(
+            "IMS SYSTEM V6 READY"
+        );
+
+
+
+    }
+
+
+    catch(error){
+
+
+        console.error(
+            "IMS INIT ERROR",
+            error
+        );
+
+
+        IMS_API_STATUS=false;
+
+
+        updateIMSSystemStatus();
+
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+// ========================================
+// CHECK API IMS
+// ========================================
+
+async function checkIMSAPI(){
+
+
+    try{
+
+
+        let result = await apiRequest(
+
+            "test",
+
+            {}
+
+        );
+
+
+
+
+        IMS_API_STATUS =
+
+        result.success === true;
+
+
+
+
+
+        if(IMS_API_STATUS){
+
+
+            console.log(
+                "IMS API ONLINE"
+            );
+
+
+        }
+
+        else{
+
+
+            console.warn(
+                "IMS API OFFLINE"
+            );
+
+
+        }
+
+
+
+
+
+        return result;
+
+
+
+    }
+
+
+    catch(error){
+
+
+        IMS_API_STATUS=false;
+
+
+        console.error(
+            "IMS API CHECK ERROR",
+            error
+        );
+
+
+        return {
+
+            success:false
+
+        };
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+
+// ========================================
+// LOADING HANDLER
+// ========================================
+
+function showLoadingIMS(state){
+
+
+    let el = document.getElementById(
+        "imsLoading"
+    );
+
+
+
+    if(!el){
+
+        return;
+
+    }
+
+
+
+
+
+    if(state){
+
+
+        el.innerText =
+        "⏳ Memuat data IMS...";
+
+
+    }
+
+    else{
+
+
+        el.innerText =
+        "🟢 Data IMS terbaru";
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+// ========================================
+// UPDATE SYSTEM STATUS
+// ========================================
+
+function updateIMSSystemStatus(){
+
+
+    let api =
+    document.getElementById(
+        "apiStatus"
+    );
+
+
+
+    if(api){
+
+
+        api.innerHTML = IMS_API_STATUS
+
+        ?
+
+        "🟢 API Online"
+
+        :
+
+        "🔴 API Offline";
+
+
+    }
+
+
+
+
+
+
+    let update =
+    document.getElementById(
+        "imsLastUpdate"
+    );
+
+
+
+    if(update && IMS_LAST_UPDATE){
+
+
+        update.innerText =
+
+        IMS_LAST_UPDATE
+
+        .toLocaleString(
+            "id-ID"
+        );
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+// ========================================
+// REFRESH IMS DATA
+// ========================================
+
+async function refreshIMSData(){
+
+
+    try{
+
+
+        showLoadingIMS(true);
+
+
+
+        const response = await apiRequest(
+
+            "getIMS",
+
+            {
+
+                page:1,
+
+                limit:10000
+
+            }
+
+        );
+
+
+
+
+
+
+        if(
+
+            !response
+
+            ||
+
+            !response.success
+
+        ){
+
+
+            throw new Error(
+
+                response.message ||
+
+                "Gagal mengambil data IMS"
+
+            );
+
+
+        }
+
+
+
+
+
+        IMS_DATA =
+
+        Array.isArray(response.data)
+
+        ?
+
+        response.data
+
+        :
+
+        [];
+
+
+
+
+
+
+
+        IMS_TOTAL = IMS_DATA.length;
+
+
+
+
+
+
+        renderIMS(
+
+            IMS_DATA
+
+        );
+
+
+
+
+
+        updateTotalIMS();
+
+
+
+        updateIMSDashboard();
+
+
+
+        generateMonthFilterIMS();
+
+
+
+        updateIMSInfo();
+
+
+
+        IMS_LAST_UPDATE = new Date();
+
+
+
+        IMS_API_STATUS=true;
+
+
+
+        updateIMSSystemStatus();
+
+
+
+
+    }
+
+
+    catch(error){
+
+
+
+        console.error(
+
+            "REFRESH IMS ERROR",
+
+            error
+
+        );
+
+
+
+        IMS_API_STATUS=false;
+
+
+
+        updateIMSSystemStatus();
+
+
+
+        renderIMS([]);
+
+
+
+    }
+
+
+
+    finally{
+
+
+        showLoadingIMS(false);
+
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// GET ALL IMS VALID DATA
+// ========================================
+
+async function getAllIMSData(){
+
+
+    try{
+
+
+        let response = await apiRequest(
+
+            "getIMS",
+
+            {
+
+                page:1,
+
+                limit:10000
+
+            }
+
+        );
+
+
+
+        if(
+
+            response.success
+
+            &&
+
+            Array.isArray(response.data)
+
+        ){
+
+
+            return response.data;
+
+
+        }
+
+
+
+        return [];
+
+
+
+    }
+
+
+    catch(error){
+
+
+        console.error(
+
+            "GET ALL IMS ERROR",
+
+            error
+
+        );
+
+
+        return [];
+
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// SUMMARY IMS REAL DATA
+// ========================================
+
+function getIMSSummary(){
+
+
+    let data = Array.isArray(
+
+        IMS_DATA
+
+    )
+
+    ?
+
+    IMS_DATA
+
+    :
+
+    [];
+
+
+
+
+
+    return {
+
+
+
+        total:
+
+        data.length,
+
+
+
+
+        progress:
+
+        data.filter(x=>
+
+            x.status==="Progress"
+
+        ).length,
+
+
+
+
+
+        revisi:
+
+        data.filter(x=>
+
+            x.status==="Revisi"
+
+        ).length,
+
+
+
+
+
+        selesai:
+
+        data.filter(x=>
+
+            x.status==="Done"
+
+            ||
+
+            x.status==="Closed"
+
+            ||
+
+            x.status==="Approved"
+
+        ).length,
+
+
+
+
+
+        belum:
+
+        data.filter(x=>
+
+            !x.status
+
+        ).length
+
+
+
+    };
+
+}
+
+
+
+
+
+
+
+
+
+console.log(
+
+"IMS JS V6 PART 4A READY"
+
+);
+ // ========================================
+// IMS MANAGEMENT SYSTEM V6
+// API JS V4 COMPATIBLE
+// PART 4B
+// REALTIME + SYNC + BACKUP + CLEANUP
+// ========================================
+
+
+// ========================================
+// START REALTIME IMS
+// ========================================
+
+function startIMSRealtime(){
+
+
+    stopIMSRealtime();
+
+
+
+
+    IMS_TIMER = setInterval(()=>{
+
+
+        refreshIMSData();
+
+
+
+    },60000);
+
+
+
+}
+
+
+
+
+
+
+
+
+// ========================================
+// STOP REALTIME IMS
+// ========================================
+
+function stopIMSRealtime(){
+
+
+
+    if(IMS_TIMER){
+
+
+        clearInterval(
+
+            IMS_TIMER
+
+        );
+
+
+        IMS_TIMER=null;
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// SYNC IMS TO DASHBOARD
+// ========================================
+
+async function syncIMSData(){
+
+
+    try{
+
+
+        await refreshIMSData();
+
+
+
+
+
+        if(typeof loadDashboard==="function"){
+
+
+            await loadDashboard();
+
+
+        }
+
+
+
+
+
+        console.log(
+
+            "IMS SYNC DASHBOARD OK"
+
+        );
+
+
+
+    }
+
+
+    catch(error){
+
+
+
+        console.error(
+
+            "IMS SYNC ERROR",
+
+            error
+
+        );
+
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// BACKUP IMS FULL
+// ========================================
 
 async function backupIMSExcel(){
 
 
 
     let data = await getAllIMSData();
+
+
+
+
+    if(
+
+        !data.length
+
+    ){
+
+
+        alert(
+
+            "Tidak ada data IMS"
+
+        );
+
+
+        return;
+
+
+    }
 
 
 
@@ -3232,7 +3667,7 @@ async function backupIMSExcel(){
 
         alert(
 
-        "Excel library belum aktif"
+            "Excel library belum aktif"
 
         );
 
@@ -3247,12 +3682,12 @@ async function backupIMSExcel(){
 
 
 
-
     let ws = XLSX.utils.json_to_sheet(
 
         data
 
     );
+
 
 
 
@@ -3300,21 +3735,20 @@ async function backupIMSExcel(){
 
 
 // ========================================
-// DELETE MULTI IMS
+// DELETE MULTIPLE IMS
 // ========================================
-
 
 async function deleteMultipleIMS(ids){
 
 
 
-    if(!Array.isArray(ids)){
+    if(
 
+        !Array.isArray(ids)
 
+    ){
 
         return;
-
-
 
     }
 
@@ -3324,16 +3758,24 @@ async function deleteMultipleIMS(ids){
 
 
 
-    for(let id of ids){
+    for(
+
+        let id of ids
+
+    ){
 
 
+        await apiRequest(
 
-        await deleteIMSAPI(
+            "deleteIMS",
 
-            id
+            {
+
+                id:id
+
+            }
 
         );
-
 
 
     }
@@ -3358,27 +3800,29 @@ async function deleteMultipleIMS(ids){
 
 
 // ========================================
-// CHECK DUPLICATE IMS
+// DUPLICATE CHECK
 // ========================================
 
-
-function checkDuplicateIMS(ref){
-
+function checkDuplicateIMS(reference){
 
 
-    return imsData.some(item=>{
+
+    return IMS_DATA.some(item=>{
 
 
         return String(
 
-            item.reference_code
+            item.reference_code || ""
 
         )
 
         ===
 
-        String(ref);
+        String(
 
+            reference || ""
+
+        );
 
 
     });
@@ -3399,13 +3843,10 @@ function checkDuplicateIMS(ref){
 // PRINT IMS
 // ========================================
 
-
 function printIMS(){
 
 
-
     window.print();
-
 
 
 }
@@ -3422,13 +3863,11 @@ function printIMS(){
 // KEYBOARD SHORTCUT
 // ========================================
 
-
 document.addEventListener(
 
 "keydown",
 
 (e)=>{
-
 
 
     if(
@@ -3466,9 +3905,8 @@ document.addEventListener(
 
 
 // ========================================
-// AUTO STOP
+// CLEANUP
 // ========================================
-
 
 window.addEventListener(
 
@@ -3493,16 +3931,14 @@ window.addEventListener(
 
 
 // ========================================
-// START
+// AUTO START
 // ========================================
-
 
 document.addEventListener(
 
 "DOMContentLoaded",
 
 ()=>{
-
 
 
     initIMSSystem();
@@ -3521,6 +3957,6 @@ document.addEventListener(
 
 console.log(
 
-"IMS JS V5 FINAL COMPLETE"
+"IMS JS V6 PART 4B READY"
 
 );
