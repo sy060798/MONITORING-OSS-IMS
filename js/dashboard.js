@@ -1,9 +1,9 @@
 // ========================================
 // DASHBOARD JS V6
 // OSS IMS MONITORING SYSTEM
-// PART 1
+// TAHAP 1
 // CORE ENGINE + API SYNC CACHE
-// API JS V4 COMPATIBLE
+// FIX DONE CACHE LOAD
 // ========================================
 
 
@@ -14,23 +14,17 @@
 
 window.DASHBOARD_DATA = {};
 
-window.OSS_CACHE =
-window.OSS_CACHE || [];
+window.OSS_CACHE = [];
 
-window.IMS_CACHE =
-window.IMS_CACHE || [];
+window.IMS_CACHE = [];
 
-window.DONE_CACHE =
-window.DONE_CACHE || [];
+window.DONE_CACHE = [];
 
-window.MASTER_CACHE =
-window.MASTER_CACHE || [];
+window.MASTER_CACHE = [];
 
-window.DASHBOARD_TIMER =
-window.DASHBOARD_TIMER || null;
+window.DASHBOARD_TIMER = null;
 
-window.STATUS_CHART =
-window.STATUS_CHART || null;
+window.STATUS_CHART = null;
 
 window.DASHBOARD_READY = false;
 
@@ -41,7 +35,7 @@ window.API_RESPONSE_TIME = 0;
 
 
 // ========================================
-// SAFE API LOAD
+// LOAD DASHBOARD DATA
 // ========================================
 
 
@@ -52,9 +46,7 @@ async function loadDashboardData(){
     performance.now();
 
 
-
     try{
-
 
 
         console.log(
@@ -70,19 +62,12 @@ async function loadDashboardData(){
 
         let oss =
         await apiRequest(
-
             "getOSS",
-
             {
-
                 page:1,
-
                 limit:1000
-
             }
-
         );
-
 
 
         if(
@@ -90,14 +75,10 @@ async function loadDashboardData(){
             oss.success
         ){
 
-
             OSS_CACHE =
             oss.data || [];
 
-
         }
-
-
 
 
 
@@ -110,19 +91,12 @@ async function loadDashboardData(){
 
         let ims =
         await apiRequest(
-
             "getIMS",
-
             {
-
                 page:1,
-
                 limit:1000
-
             }
-
         );
-
 
 
         if(
@@ -130,15 +104,10 @@ async function loadDashboardData(){
             ims.success
         ){
 
-
             IMS_CACHE =
             ims.data || [];
 
-
         }
-
-
-
 
 
 
@@ -151,19 +120,12 @@ async function loadDashboardData(){
 
         let done =
         await apiRequest(
-
             "getDONE",
-
             {
-
                 page:1,
-
                 limit:1000
-
             }
-
         );
-
 
 
         if(
@@ -171,15 +133,10 @@ async function loadDashboardData(){
             done.success
         ){
 
-
             DONE_CACHE =
             done.data || [];
 
-
         }
-
-
-
 
 
 
@@ -192,13 +149,9 @@ async function loadDashboardData(){
 
         let master =
         await apiRequest(
-
             "getMaster",
-
             {}
-
         );
-
 
 
         if(
@@ -206,10 +159,8 @@ async function loadDashboardData(){
             master.success
         ){
 
-
             MASTER_CACHE =
             master.data || [];
-
 
         }
 
@@ -222,23 +173,18 @@ async function loadDashboardData(){
         performance.now();
 
 
-
         API_RESPONSE_TIME =
-
         Math.round(
-
             end-start
-
         );
 
 
 
 
 
+
         console.log(
-
             "DASHBOARD CACHE",
-
             {
 
                 OSS:
@@ -254,7 +200,6 @@ async function loadDashboardData(){
                 MASTER_CACHE.length
 
             }
-
         );
 
 
@@ -264,28 +209,19 @@ async function loadDashboardData(){
 
 
     }
-
-
     catch(error){
 
 
-
         console.error(
-
-            "LOAD DASHBOARD DATA ERROR",
-
+            "LOAD DASHBOARD ERROR",
             error
-
         );
-
 
 
         return false;
 
 
-
     }
-
 
 
 }
@@ -296,8 +232,9 @@ async function loadDashboardData(){
 
 
 
+
 // ========================================
-// CALCULATION ENGINE
+// CALCULATE DASHBOARD
 // ========================================
 
 
@@ -306,79 +243,40 @@ function calculateDashboard(){
 
 
     let selesai =
-
     DONE_CACHE.length;
 
 
 
-
-
-
     let progress =
-
     IMS_CACHE.filter(item=>{
 
 
-        let status =
-
-        String(
-
+        return String(
             item.status || ""
-
         )
-
-        .toLowerCase();
-
-
-
-        return (
-
-            status ===
-
-            "progress"
-
-        );
-
+        .toLowerCase()
+        ===
+        "progress";
 
 
     }).length;
-
-
-
-
 
 
 
 
     let revisi =
-
     IMS_CACHE.filter(item=>{
 
 
-        let status =
-
-        String(
-
+        return String(
             item.status || ""
-
         )
-
-        .toLowerCase();
-
-
-
-        return (
-
-            status ===
-
-            "revisi"
-
-        );
-
+        .toLowerCase()
+        ===
+        "revisi";
 
 
     }).length;
-
 
 
 
@@ -387,24 +285,16 @@ function calculateDashboard(){
 
 
     let imsRef =
-
     IMS_CACHE.map(item=>{
 
 
         return String(
-
             item.reference_code || ""
-
         )
-
         .trim();
 
 
-
     });
-
-
-
 
 
 
@@ -417,26 +307,19 @@ function calculateDashboard(){
 
 
         let ref =
-
         String(
-
             item.reference_code || ""
-
         )
-
         .trim();
-
 
 
 
         return (
 
             ref &&
-
             !imsRef.includes(ref)
 
         );
-
 
 
     }).length;
@@ -446,58 +329,39 @@ function calculateDashboard(){
 
 
 
-
-
     DASHBOARD_DATA = {
 
 
-
         totalOSS:
-
         OSS_CACHE.length,
 
 
-
         totalIMS:
-
         IMS_CACHE.length,
 
 
-
         totalDONE:
-
         DONE_CACHE.length,
 
 
-
         totalMaster:
-
         MASTER_CACHE.length,
 
 
-
         selesai:
-
         selesai,
 
 
-
         progress:
-
         progress,
 
 
-
         revisi:
-
         revisi,
 
 
-
         belumIMS:
-
         belumIMS
-
 
 
     };
@@ -505,9 +369,7 @@ function calculateDashboard(){
 
 
 
-
     return DASHBOARD_DATA;
-
 
 
 }
@@ -527,9 +389,7 @@ function calculateDashboard(){
 async function loadDashboard(){
 
 
-
     try{
-
 
 
         dashboardLoading(true);
@@ -537,21 +397,15 @@ async function loadDashboard(){
 
 
         let result =
-
         await loadDashboardData();
-
 
 
 
         if(!result){
 
-
             throw new Error(
-
                 "Data dashboard gagal"
-
             );
-
 
         }
 
@@ -581,39 +435,26 @@ async function loadDashboard(){
 
 
         console.log(
-
-            "DASHBOARD DATA READY",
-
+            "DASHBOARD READY",
             DASHBOARD_DATA
-
         );
 
 
 
     }
-
-
     catch(error){
 
 
-
         console.error(
-
-            "DASHBOARD LOAD ERROR",
-
+            "DASHBOARD ERROR",
             error
-
         );
-
 
 
         updateAPIStatus(false);
 
 
-
     }
-
-
     finally{
 
 
@@ -625,6 +466,7 @@ async function loadDashboard(){
 
 
 }
+
 
 
 
@@ -644,7 +486,6 @@ function setDashboardValue(
 
 
     let el =
-
     document.getElementById(id);
 
 
@@ -653,12 +494,10 @@ function setDashboardValue(
 
 
         el.innerText =
-
         value ?? 0;
 
 
     }
-
 
 
 }
@@ -669,8 +508,9 @@ function setDashboardValue(
 
 
 
+
 // ========================================
-// EXPORT GLOBAL
+// EXPORT
 // ========================================
 
 
@@ -678,12 +518,10 @@ window.DASHBOARD_ENGINE = {
 
 
     reload:
-
     loadDashboard,
 
 
     calculate:
-
     calculateDashboard
 
 
@@ -694,55 +532,96 @@ window.DASHBOARD_ENGINE = {
 
 
 console.log(
-
-"DASHBOARD JS V6 PART 1 READY"
-
+"DASHBOARD JS V6 TAHAP 1 READY"
 );
+
 
 // ========================================
 // DASHBOARD JS V6
 // OSS IMS MONITORING SYSTEM
-// PART 2
+// TAHAP 2
 // STATUS ENGINE + SUMMARY + FILTER
-// SYNC DIRECT API CACHE
+// FIX DONE CACHE
 // ========================================
 
 
+
 // ========================================
-// STATUS SUMMARY ENGINE
+// BUILD STATUS SUMMARY
 // ========================================
 
 
 function buildStatusSummary(){
 
 
-    let ims = Array.isArray(IMS_CACHE)
-        ? IMS_CACHE
-        : [];
+    let ims =
+
+    Array.isArray(IMS_CACHE)
+
+    ?
+
+    IMS_CACHE
+
+    :
+
+    [];
+
+
+
+
+    let done =
+
+    Array.isArray(DONE_CACHE)
+
+    ?
+
+    DONE_CACHE
+
+    :
+
+    [];
+
+
+
 
 
 
     let summary = {
 
-        total: ims.length,
 
-        done:0,
+        totalIMS:
+        ims.length,
+
+
+        totalDONE:
+        done.length,
+
 
         progress:0,
 
+
         revisi:0,
+
 
         approved:0,
 
+
         booked:0,
+
 
         invoice:0,
 
+
         closed:0,
+
 
         lainnya:0
 
+
     };
+
+
+
 
 
 
@@ -750,12 +629,10 @@ function buildStatusSummary(){
     ims.forEach(item=>{
 
 
-        let status = String(
+        let status =
 
-            item.status ||
-
-            ""
-
+        String(
+            item.status || ""
         )
 
         .trim()
@@ -765,16 +642,8 @@ function buildStatusSummary(){
 
 
 
+
         switch(status){
-
-
-            case "done":
-
-            case "selesai":
-
-                summary.done++;
-
-            break;
 
 
 
@@ -786,11 +655,13 @@ function buildStatusSummary(){
 
 
 
+
             case "revisi":
 
                 summary.revisi++;
 
             break;
+
 
 
 
@@ -802,11 +673,13 @@ function buildStatusSummary(){
 
 
 
+
             case "booked":
 
                 summary.booked++;
 
             break;
+
 
 
 
@@ -820,11 +693,13 @@ function buildStatusSummary(){
 
 
 
+
             case "closed":
 
                 summary.closed++;
 
             break;
+
 
 
 
@@ -835,10 +710,14 @@ function buildStatusSummary(){
             break;
 
 
+
         }
 
 
+
     });
+
+
 
 
 
@@ -850,7 +729,10 @@ function buildStatusSummary(){
     return summary;
 
 
+
 }
+
+
 
 
 
@@ -867,28 +749,32 @@ function updateStatusSummary(){
 
 
 
-    let data = buildStatusSummary();
+    let data =
+    buildStatusSummary();
+
+
+
+
+
+    setDashboardValue(
+
+        "statusIMS",
+
+        data.totalIMS
+
+    );
 
 
 
 
     setDashboardValue(
 
-        "statusTotal",
+        "statusDONE",
 
-        data.total
-
-    );
-
-
-
-    setDashboardValue(
-
-        "statusDone",
-
-        data.done
+        data.totalDONE
 
     );
+
 
 
 
@@ -902,6 +788,7 @@ function updateStatusSummary(){
 
 
 
+
     setDashboardValue(
 
         "statusRevisi",
@@ -909,6 +796,7 @@ function updateStatusSummary(){
         data.revisi
 
     );
+
 
 
 
@@ -930,18 +818,22 @@ function updateStatusSummary(){
 
 
 
+
+
 // ========================================
-// DETAIL STATUS TABLE
+// DONE TABLE RENDER
 // ========================================
 
 
-function renderStatusMonitoring(){
+function renderDONEList(){
 
 
 
-    let tbody = document.getElementById(
+    let tbody =
 
-        "statusMonitoring"
+    document.getElementById(
+
+        "doneTable"
 
     );
 
@@ -955,7 +847,117 @@ function renderStatusMonitoring(){
 
 
 
-    let data = buildStatusSummary();
+
+
+    tbody.innerHTML="";
+
+
+
+
+
+    DONE_CACHE.forEach(item=>{
+
+
+
+        tbody.innerHTML += `
+
+
+        <tr>
+
+
+            <td>
+
+            ${item.wo || ""}
+
+            </td>
+
+
+
+            <td>
+
+            ${item.reference_code || ""}
+
+            </td>
+
+
+
+            <td>
+
+            ${item.job_name || ""}
+
+            </td>
+
+
+
+            <td>
+
+            <span class="badge bg-success">
+
+            DONE
+
+            </span>
+
+            </td>
+
+
+
+        </tr>
+
+
+        `;
+
+
+
+    });
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// STATUS MONITOR TABLE
+// ========================================
+
+
+function renderStatusMonitoring(){
+
+
+
+    let tbody =
+
+    document.getElementById(
+
+        "statusMonitoring"
+
+    );
+
+
+
+
+    if(!tbody){
+
+        return;
+
+    }
+
+
+
+
+
+
+    let data =
+
+    buildStatusSummary();
+
+
 
 
 
@@ -965,9 +967,9 @@ function renderStatusMonitoring(){
 
     <tr>
 
-        <td>Done</td>
+        <td>DONE</td>
 
-        <td>${data.done}</td>
+        <td>${data.totalDONE}</td>
 
     </tr>
 
@@ -1015,7 +1017,7 @@ function renderStatusMonitoring(){
 
     <tr>
 
-        <td>Ready Invoice</td>
+        <td>Invoice</td>
 
         <td>${data.invoice}</td>
 
@@ -1045,8 +1047,10 @@ function renderStatusMonitoring(){
 
 
 
+
+
 // ========================================
-// FILTER DASHBOARD STATUS
+// FILTER STATUS IMS
 // ========================================
 
 
@@ -1054,26 +1058,28 @@ function filterDashboardStatus(status){
 
 
 
-    let ims = Array.isArray(
+    let ims =
 
-        IMS_CACHE
+    Array.isArray(IMS_CACHE)
 
-    )
+    ?
 
-    ? IMS_CACHE
+    IMS_CACHE
 
-    : [];
+    :
+
+    [];
+
 
 
 
 
     if(!status){
 
-
         return ims;
 
-
     }
+
 
 
 
@@ -1110,8 +1116,10 @@ function filterDashboardStatus(status){
 
 
 
+
+
 // ========================================
-// SEARCH GLOBAL DASHBOARD
+// GLOBAL SEARCH
 // ========================================
 
 
@@ -1130,24 +1138,18 @@ function globalDashboardSearch(keyword){
 
 
 
-    let result=[];
-
-
 
     let all = [
 
-        ...(Array.isArray(OSS_CACHE)
 
-            ? OSS_CACHE
-
-            : []),
+        ...OSS_CACHE,
 
 
-        ...(Array.isArray(IMS_CACHE)
+        ...IMS_CACHE,
 
-            ? IMS_CACHE
 
-            : [])
+        ...DONE_CACHE
+
 
     ];
 
@@ -1155,17 +1157,23 @@ function globalDashboardSearch(keyword){
 
 
 
-    result = all.filter(item=>{
+    return all.filter(item=>{
 
 
 
         return (
 
-            String(item.reference_code || "")
+
+
+            String(
+                item.reference_code || ""
+            )
 
             .toLowerCase()
 
             .includes(keyword)
+
+
 
 
 
@@ -1173,11 +1181,17 @@ function globalDashboardSearch(keyword){
 
 
 
-            String(item.customer || "")
+
+
+            String(
+                item.customer || ""
+            )
 
             .toLowerCase()
 
             .includes(keyword)
+
+
 
 
 
@@ -1185,34 +1199,23 @@ function globalDashboardSearch(keyword){
 
 
 
-            String(item.jobName || "")
+
+
+            String(
+                item.wo || ""
+            )
 
             .toLowerCase()
 
             .includes(keyword)
 
 
-
-            ||
-
-
-
-            String(item.wo || "")
-
-            .toLowerCase()
-
-            .includes(keyword)
 
         );
 
 
 
     });
-
-
-
-
-    return result;
 
 
 
@@ -1224,8 +1227,10 @@ function globalDashboardSearch(keyword){
 
 
 
+
+
 // ========================================
-// SYNC DASHBOARD AFTER CRUD
+// SYNC AFTER CHANGE
 // ========================================
 
 
@@ -1237,15 +1242,8 @@ async function syncAfterChange(){
 
 
 
-        if(typeof refreshAllData==="function"){
+        await loadDashboardData();
 
-
-
-            await refreshAllData();
-
-
-
-        }
 
 
 
@@ -1254,7 +1252,11 @@ async function syncAfterChange(){
 
 
 
+
+
         updateStatusSummary();
+
+
 
 
 
@@ -1262,15 +1264,35 @@ async function syncAfterChange(){
 
 
 
+
+
+        renderDONEList();
+
+
+
+
+
         renderDashboard();
 
 
 
-        renderStatusChart();
+
+
+        if(
+            typeof renderStatusChart === "function"
+        ){
+
+            renderStatusChart();
+
+        }
+
+
 
 
 
         updateSystemMonitor();
+
+
 
 
 
@@ -1282,23 +1304,23 @@ async function syncAfterChange(){
 
 
 
+
     }
 
     catch(error){
 
 
-
         console.error(
 
-            "DASHBOARD SYNC ERROR",
+            "SYNC ERROR",
 
             error
 
         );
 
 
-
     }
+
 
 
 }
@@ -1307,35 +1329,30 @@ async function syncAfterChange(){
 
 
 
-
-
 console.log(
-
-"DASHBOARD JS V6 PART 2 READY"
-
+"DASHBOARD JS V6 TAHAP 2 READY"
 );
 
 // ========================================
 // DASHBOARD JS V6
 // OSS IMS MONITORING SYSTEM
-// PART 3
+// TAHAP 3
 // TOOLBAR CONTROL + EXPORT + REFRESH
-// FULL SYNC OSS IMS
+// FULL CACHE SYNC OSS IMS DONE
 // ========================================
 
 
 // ========================================
-// REFRESH BUTTON TOOLBAR
+// REFRESH DASHBOARD
 // ========================================
 
 
 async function dashboardRefresh(){
 
 
-    let btn = document.querySelector(
-
+    let btn =
+    document.querySelector(
         ".btn-refresh"
-
     );
 
 
@@ -1348,10 +1365,10 @@ async function dashboardRefresh(){
             btn.disabled = true;
 
             btn.innerHTML =
-
             "⏳ Loading...";
 
         }
+
 
 
 
@@ -1359,30 +1376,32 @@ async function dashboardRefresh(){
 
 
 
+
         await syncAfterChange();
 
 
 
+
+
         showDashboardToast(
-
             "Data berhasil disinkron"
-
         );
 
 
 
     }
-
     catch(error){
+
 
 
         console.error(
 
-            "REFRESH DASHBOARD ERROR",
+            "REFRESH ERROR",
 
             error
 
         );
+
 
 
         showDashboardToast(
@@ -1392,9 +1411,10 @@ async function dashboardRefresh(){
         );
 
 
-    }
 
+    }
     finally{
+
 
 
         if(btn){
@@ -1403,8 +1423,7 @@ async function dashboardRefresh(){
             btn.disabled=false;
 
 
-            btn.innerHTML=
-
+            btn.innerHTML =
             "🔄 Refresh";
 
 
@@ -1427,8 +1446,10 @@ async function dashboardRefresh(){
 
 
 
+
+
 // ========================================
-// EXPORT FULL DATA EXCEL
+// EXPORT EXCEL FULL DATA
 // ========================================
 
 
@@ -1436,13 +1457,13 @@ function exportFullDashboardExcel(){
 
 
 
-    if(typeof XLSX==="undefined"){
+    if(
+        typeof XLSX === "undefined"
+    ){
 
 
         alert(
-
             "Excel Library belum aktif"
-
         );
 
 
@@ -1454,45 +1475,25 @@ function exportFullDashboardExcel(){
 
 
 
-    let oss = Array.isArray(
+
+    let wb =
+    XLSX.utils.book_new();
+
+
+
+
+
+
+    // ==========================
+    // OSS
+    // ==========================
+
+
+    let ossSheet =
+
+    XLSX.utils.json_to_sheet(
 
         OSS_CACHE
-
-    )
-
-    ? OSS_CACHE
-
-    : [];
-
-
-
-
-    let ims = Array.isArray(
-
-        IMS_CACHE
-
-    )
-
-    ? IMS_CACHE
-
-    : [];
-
-
-
-
-
-    let wb = XLSX.utils.book_new();
-
-
-
-
-
-    // OSS SHEET
-
-
-    let ossSheet = XLSX.utils.json_to_sheet(
-
-        oss
 
     );
 
@@ -1515,12 +1516,17 @@ function exportFullDashboardExcel(){
 
 
 
-    // IMS SHEET
+
+    // ==========================
+    // IMS
+    // ==========================
 
 
-    let imsSheet = XLSX.utils.json_to_sheet(
+    let imsSheet =
 
-        ims
+    XLSX.utils.json_to_sheet(
+
+        IMS_CACHE
 
     );
 
@@ -1544,48 +1550,88 @@ function exportFullDashboardExcel(){
 
 
 
-    // SUMMARY SHEET
+    // ==========================
+    // DONE
+    // ==========================
 
 
-    let summarySheet = XLSX.utils.json_to_sheet([
+    let doneSheet =
 
-        {
+    XLSX.utils.json_to_sheet(
 
-            TOTAL_OSS:
+        DONE_CACHE
 
-            oss.length,
-
-
-            TOTAL_IMS:
-
-            ims.length,
+    );
 
 
-            DONE:
 
-            DASHBOARD_DATA.STATUS?.done || 0,
+    XLSX.utils.book_append_sheet(
 
+        wb,
 
-            PROGRESS:
+        doneSheet,
 
-            DASHBOARD_DATA.STATUS?.progress || 0,
+        "DATA DONE"
 
-
-            REVISI:
-
-            DASHBOARD_DATA.STATUS?.revisi || 0,
+    );
 
 
-            CLOSED:
-
-            DASHBOARD_DATA.STATUS?.closed || 0
 
 
-        }
-
-    ]);
 
 
+
+
+
+    // ==========================
+    // SUMMARY
+    // ==========================
+
+
+    let summary = [{
+
+        TOTAL_OSS:
+
+        OSS_CACHE.length,
+
+
+        TOTAL_IMS:
+
+        IMS_CACHE.length,
+
+
+        TOTAL_DONE:
+
+        DONE_CACHE.length,
+
+
+        PROGRESS:
+
+        DASHBOARD_DATA.STATUS?.progress || 0,
+
+
+        REVISI:
+
+        DASHBOARD_DATA.STATUS?.revisi || 0,
+
+
+        CLOSED:
+
+        DASHBOARD_DATA.STATUS?.closed || 0
+
+
+    }];
+
+
+
+
+    let summarySheet =
+
+    XLSX.utils.json_to_sheet(
+
+        summary
+
+    );
 
 
 
@@ -1598,6 +1644,7 @@ function exportFullDashboardExcel(){
         "SUMMARY"
 
     );
+
 
 
 
@@ -1647,7 +1694,7 @@ function printReport(){
 
 
 // ========================================
-// DASHBOARD TOOLBAR BUTTON STATE
+// TOOLBAR BUTTON ACTIVE
 // ========================================
 
 
@@ -1655,7 +1702,9 @@ function activateDashboardToolbar(){
 
 
 
-    let refresh = document.querySelector(
+    let refresh =
+
+    document.querySelector(
 
         ".btn-refresh"
 
@@ -1663,15 +1712,14 @@ function activateDashboardToolbar(){
 
 
 
+
     if(refresh){
 
 
-
-        refresh.onclick = function(){
+        refresh.onclick=function(){
 
 
             dashboardRefresh();
-
 
 
         };
@@ -1685,11 +1733,15 @@ function activateDashboardToolbar(){
 
 
 
-    let excel = document.querySelector(
+
+    let excel =
+
+    document.querySelector(
 
         ".btn-export"
 
     );
+
 
 
 
@@ -1715,11 +1767,15 @@ function activateDashboardToolbar(){
 
 
 
-    let print = document.querySelector(
+
+    let print =
+
+    document.querySelector(
 
         ".btn-print"
 
     );
+
 
 
 
@@ -1738,8 +1794,6 @@ function activateDashboardToolbar(){
 
 
     }
-
-
 
 
 
@@ -1768,6 +1822,9 @@ function autoUpdateDashboardStatus(){
     renderStatusMonitoring();
 
 
+    renderDONEList();
+
+
     updateSystemMonitor();
 
 
@@ -1783,7 +1840,7 @@ function autoUpdateDashboardStatus(){
 
 
 // ========================================
-// REALTIME LOOP
+// REALTIME SYNC
 // ========================================
 
 
@@ -1806,7 +1863,10 @@ function startDashboardSync(){
 
 
 
-    DASHBOARD_TIMER = setInterval(()=>{
+
+    DASHBOARD_TIMER =
+
+    setInterval(()=>{
 
 
 
@@ -1819,7 +1879,6 @@ function startDashboardSync(){
 
 
 }
-
 
 
 
@@ -1851,7 +1910,6 @@ function stopDashboardSync(){
     }
 
 
-
 }
 
 
@@ -1863,8 +1921,7 @@ function stopDashboardSync(){
 
 
 // ========================================
-// BUTTON SHORTCUT
-// CTRL + R SYNC
+// CTRL + R REFRESH
 // ========================================
 
 
@@ -1889,6 +1946,7 @@ function(e){
         e.preventDefault();
 
 
+
         dashboardRefresh();
 
 
@@ -1908,7 +1966,7 @@ function(e){
 
 
 // ========================================
-// DOM READY PART 3
+// DOM READY
 // ========================================
 
 
@@ -1919,13 +1977,21 @@ document.addEventListener(
 ()=>{
 
 
+
     activateDashboardToolbar();
+
 
 
     updateStatusSummary();
 
 
+
     renderStatusMonitoring();
+
+
+
+    renderDONEList();
+
 
 
     startDashboardSync();
@@ -1941,594 +2007,9 @@ document.addEventListener(
 
 
 
-
 console.log(
 
-"DASHBOARD JS V6 PART 3 READY"
+"DASHBOARD JS V6 TAHAP 3 READY"
 
 );
 
-// ========================================
-// DASHBOARD JS V6
-// OSS IMS MONITORING SYSTEM
-// PART 4
-// FINAL INIT + CACHE SYNC + CLEANUP
-// ========================================
-
-
-// ========================================
-// FINAL DASHBOARD START
-// ========================================
-
-
-async function startDashboardV6(){
-
-
-    try{
-
-
-        console.log(
-
-            "START DASHBOARD V6"
-
-        );
-
-
-
-
-        dashboardLoading(true);
-
-
-
-
-
-        // LOAD OSS CACHE
-
-
-        if(
-
-            typeof getAllOSS === "function"
-
-        ){
-
-
-            await getAllOSS();
-
-
-        }
-
-
-
-
-
-
-        // LOAD IMS CACHE
-
-
-        if(
-
-            typeof getAllIMS === "function"
-
-        ){
-
-
-            await getAllIMS();
-
-
-        }
-
-
-
-
-
-
-
-
-        // HITUNG DATA
-
-
-        calculateDashboard();
-
-
-
-        updateStatusSummary();
-
-
-
-
-
-        // RENDER SEMUA
-
-
-        renderDashboard();
-
-
-
-        renderStatusChart();
-
-
-
-        renderStatusMonitoring();
-
-
-
-        updateSystemMonitor();
-
-
-
-
-        activateDashboardToolbar();
-
-
-
-
-
-        startDashboardSync();
-
-
-
-
-
-        DASHBOARD_READY=true;
-
-
-
-
-
-        console.log(
-
-            "DASHBOARD V6 READY"
-
-        );
-
-
-
-    }
-
-
-
-    catch(error){
-
-
-
-        console.error(
-
-            "START DASHBOARD ERROR",
-
-            error
-
-        );
-
-
-
-        updateAPIStatus(false);
-
-
-
-    }
-
-
-
-    finally{
-
-
-        dashboardLoading(false);
-
-
-
-    }
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ========================================
-// FORCE LOAD ALL DATA
-// ========================================
-
-
-async function forceDashboardSync(){
-
-
-
-    try{
-
-
-
-        showDashboardToast(
-
-            "Sync OSS IMS..."
-
-        );
-
-
-
-
-
-
-        if(
-
-            typeof refreshAllData === "function"
-
-        ){
-
-
-            await refreshAllData();
-
-
-
-        }
-
-        else{
-
-
-            if(
-
-                typeof getAllOSS==="function"
-
-            ){
-
-
-                await getAllOSS();
-
-
-            }
-
-
-
-
-            if(
-
-                typeof getAllIMS==="function"
-
-            ){
-
-
-                await getAllIMS();
-
-
-            }
-
-
-
-        }
-
-
-
-
-
-        calculateDashboard();
-
-
-
-        updateStatusSummary();
-
-
-
-        renderDashboard();
-
-
-
-        renderStatusChart();
-
-
-
-        renderStatusMonitoring();
-
-
-
-        updateSystemMonitor();
-
-
-
-
-
-        showDashboardToast(
-
-            "Sync selesai"
-
-        );
-
-
-
-    }
-
-
-
-    catch(err){
-
-
-
-        console.error(
-
-            "FORCE SYNC ERROR",
-
-            err
-
-        );
-
-
-
-        showDashboardToast(
-
-            "Sync gagal"
-
-        );
-
-
-
-    }
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ========================================
-// DASHBOARD HEALTH CHECK
-// ========================================
-
-
-function dashboardHealthCheck(){
-
-
-
-    let result={
-
-
-
-        ready:DASHBOARD_READY,
-
-
-
-        api:
-
-        API_RESPONSE_TIME,
-
-
-
-        oss:
-
-        Array.isArray(OSS_CACHE)
-
-        ? OSS_CACHE.length
-
-        : 0,
-
-
-
-        ims:
-
-        Array.isArray(IMS_CACHE)
-
-        ? IMS_CACHE.length
-
-        : 0,
-
-
-
-        status:
-
-        DASHBOARD_DATA.STATUS || {}
-
-
-
-    };
-
-
-
-
-    console.table(result);
-
-
-
-    return result;
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ========================================
-// SAFE AUTO UPDATE
-// ========================================
-
-
-function safeDashboardUpdate(){
-
-
-
-    try{
-
-
-
-        calculateDashboard();
-
-
-
-        updateStatusSummary();
-
-
-
-        renderDashboard();
-
-
-
-        renderStatusChart();
-
-
-
-        renderStatusMonitoring();
-
-
-
-    }
-
-
-
-    catch(error){
-
-
-
-        console.error(
-
-            "AUTO UPDATE ERROR",
-
-            error
-
-        );
-
-
-
-    }
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ========================================
-// VISIBILITY SYNC
-// ========================================
-
-
-document.addEventListener(
-
-"visibilitychange",
-
-()=>{
-
-
-
-    if(
-
-        document.visibilityState==="visible"
-
-    ){
-
-
-
-        safeDashboardUpdate();
-
-
-
-    }
-
-
-
-});
-
-
-
-
-
-
-
-
-
-// ========================================
-// WINDOW CLEANUP
-// ========================================
-
-
-window.addEventListener(
-
-"beforeunload",
-
-()=>{
-
-
-
-    stopDashboardSync();
-
-
-
-
-
-    if(STATUS_CHART){
-
-
-
-        STATUS_CHART.destroy();
-
-
-
-        STATUS_CHART=null;
-
-
-
-    }
-
-
-
-});
-
-
-
-
-
-
-
-
-
-// ========================================
-// START APP
-// ========================================
-
-
-document.addEventListener(
-
-"DOMContentLoaded",
-
-()=>{
-
-
-
-    startDashboardV6();
-
-
-
-});
-
-
-
-
-
-
-
-
-
-console.log(
-
-"DASHBOARD JS V6 PART 4 FINAL READY"
-
-);
