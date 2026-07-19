@@ -2535,38 +2535,3 @@ console.log(
 "API JS V5 FINAL COMPLETE"
 
 );
-
-// ========================================
-// IMPORT FILTER DUPLIKAT
-// TEMPPEL PALING BAWAH api.js
-// ========================================
-
-function removeDuplicateByReference(rows){
-
-    const map = {};
-
-    return rows.filter(item=>{
-
-        const ref = String(
-            item.reference_code || ""
-        ).trim();
-
-        if(!ref){
-
-            return false;
-
-        }
-
-        if(map[ref]){
-
-            return false;
-
-        }
-
-        map[ref] = true;
-
-        return true;
-
-    });
-
-}
