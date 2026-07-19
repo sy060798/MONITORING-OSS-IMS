@@ -1,10 +1,9 @@
 // ========================================
-// MASTER MONITORING V10
+// MASTER MONITORING V11
 // PART 1 / 5
-// LOAD ENGINE
-// OSS STATUS DONE FILTER
-// IMS VS OSS MASTER
-// SESUAI HTML MASTER
+// OSS ACTIVE BASED SYSTEM
+// IMS LOOKUP ONLY
+// FAST LOAD ENGINE
 // ========================================
 
 
@@ -14,192 +13,140 @@
 
 window.MASTER_STATE = {
 
-
     data: [],
-
 
     filter: [],
 
-
     page: 1,
-
 
     limit: 100,
 
-
-    timer: null
-
+    timer:null
 
 };
 
 
 
 
-
-
-
-
 // ========================================
-// STATUS IMS SELESAI
+// STATUS SELESAI IMS
 // ========================================
 
-const MASTER_FINISH_STATUS = [
+const MASTER_DONE_STATUS = [
 
+    "submitted",
 
-    "Submitted",
+    "ready to invoice",
 
+    "closed",
 
-    "Ready to Invoice",
+    "booked",
 
+    "approved",
 
-    "Closed",
+    "done",
 
-
-    "Booked",
-
-
-    "Approved"
-
+    "sudah"
 
 ];
 
 
 
 
+// ========================================
+// NORMALIZE
+// ========================================
 
+function normalizeMasterStatus(status){
+
+    return String(status || "")
+
+    .trim()
+
+    .toLowerCase();
+
+}
 
 
 
 
 // ========================================
-// LOAD MASTER DATA
+// LOAD MASTER V11
+// OSS SEBAGAI SUMBER UTAMA
 // ========================================
 
 async function loadMaster(){
 
 
-
     try{
-
 
 
         showLoadingMaster(true);
 
 
 
+        console.log(
+            "LOAD MASTER V11 START"
+        );
 
 
-        // ================================
-        // LOAD DATA
-        // ================================
+
+        // ===============================
+        // LOAD OSS SAJA DULU
+        // ===============================
 
 
         let oss = await getAllOSS();
 
 
+
+        if(!Array.isArray(oss)){
+
+            oss=[];
+
+        }
+
+
+
+
+        // ===============================
+        // LOAD IMS UNTUK LOOKUP
+        // BUKAN DIGABUNG
+        // ===============================
+
+
         let ims = await getAllIMS();
 
 
-        let done = await getDONEAPI();
+
+        if(!Array.isArray(ims)){
+
+            ims=[];
+
+        }
 
 
 
 
+        // ===============================
+        // INDEX IMS
+        // ===============================
 
-
-
-
-        if(!Array.isArray(oss))
-        oss=[];
-
-
-
-        if(!Array.isArray(ims))
-        ims=[];
-
-
-
-        if(!Array.isArray(done))
-        done=[];
-
-
-
-
-
-
-
-
-
-        // ================================
-        // MAP DONE
-        // ================================
-
-        let doneMap={};
-
-
-
-
-
-        done.forEach(item=>{
-
-
-
-            let ref = String(
-
-                item.reference_code || ""
-
-            ).trim();
-
-
-
-
-
-            if(ref){
-
-
-
-                doneMap[ref]=true;
-
-
-
-            }
-
-
-
-
-        });
-
-
-
-
-
-
-
-
-
-
-        // ================================
-        // MAP IMS
-        // ================================
 
         let imsMap={};
-
-
-
 
 
 
         ims.forEach(item=>{
 
 
-
             let ref = String(
 
                 item.reference_code || ""
 
-            ).trim();
+            )
 
-
+            .trim();
 
 
 
@@ -212,12 +159,7 @@ async function loadMaster(){
             }
 
 
-
         });
-
-
-
-
 
 
 
@@ -228,31 +170,21 @@ async function loadMaster(){
 
 
 
-
-
-
-
-
-
-        // ================================
-        // LOOP OSS
-        // ================================
+        // ===============================
+        // LOOP OSS ACTIVE
+        // ===============================
 
 
         oss.forEach(item=>{
-
-
-
 
 
             let ref = String(
 
                 item.reference_code || ""
 
-            ).trim();
+            )
 
-
-
+            .trim();
 
 
 
@@ -262,80 +194,28 @@ async function loadMaster(){
 
 
 
+            let ossStatus =
+
+            normalizeMasterStatus(
+
+                item.status
+
+            );
 
 
 
 
-
-            // =================================
-            // CEK STATUS OSS
-            // JIKA SUDAH DONE HILANG DARI WEB
-            // =================================
-
-
-            let ossStatus = String(
-
-                item.status || ""
-
-            )
-
-            .toUpperCase()
-
-            .trim();
-
-
-
-
-
+            // skip jika OSS sudah selesai
 
             if(
 
-                ossStatus==="DONE"
+                ossStatus==="done"
 
             ){
 
-
                 return;
 
-
             }
-
-
-
-
-
-
-
-
-
-            // =================================
-            // CEK DONE SHEET
-            // =================================
-
-
-            if(doneMap[ref]){
-
-
-                return;
-
-
-            }
-
-
-
-
-
-
-
-
-
-            let imsData =
-
-            imsMap[ref];
-
-
-
-
 
 
 
@@ -344,26 +224,35 @@ async function loadMaster(){
             let row={
 
 
-
-                wo:"-",
-
-
                 reference_code:ref,
 
 
-                customer:item.customer || "",
+                customer:
+
+                item.customer || "",
 
 
-                city:item.city || "",
+
+                city:
+
+                item.city || "",
 
 
-                bulan:"-",
+
+                wo:"-",
+
 
 
                 job_name:"-",
 
 
+
+                bulan:"-",
+
+
+
                 status:"Belum",
+
 
 
                 note:"Belum masuk IMS"
@@ -377,15 +266,17 @@ async function loadMaster(){
 
 
 
+            // ===============================
+            // CEK IMS
+            // ===============================
+
+
+            let imsData =
+
+            imsMap[ref];
 
 
 
-
-
-
-            // =================================
-            // JIKA ADA IMS
-            // =================================
 
 
             if(imsData){
@@ -398,28 +289,31 @@ async function loadMaster(){
 
 
 
-                row.bulan =
-
-                imsData.bulan || "-";
-
-
-
                 row.job_name =
 
                 imsData.job_name || "-";
 
 
 
+                row.bulan =
+
+                imsData.bulan || "-";
 
 
 
-                let status = String(
+                let status =
 
-                    imsData.status || ""
-
-                ).trim();
+                imsData.status || "";
 
 
+
+                let cleanStatus =
+
+                normalizeMasterStatus(
+
+                    status
+
+                );
 
 
 
@@ -427,17 +321,17 @@ async function loadMaster(){
 
                 if(
 
-                    MASTER_FINISH_STATUS.includes(status)
+                    MASTER_DONE_STATUS.includes(
+
+                        cleanStatus
+
+                    )
 
                 ){
 
 
 
-                    row.status="Sudah";
-
-
-                    row.note="Menunggu sync DONE";
-
+                    return;
 
 
                 }
@@ -446,46 +340,15 @@ async function loadMaster(){
 
 
 
+                row.status =
 
-                else if(
-
-                    status==="Revisi"
-
-                ){
+                status;
 
 
 
-                    row.status="Revisi";
+                row.note =
 
-
-                    row.note="Perlu revisi";
-
-
-
-                }
-
-
-
-
-
-
-
-                else{
-
-
-
-                    row.status="Progress";
-
-
-                    row.note="IMS proses";
-
-
-
-                }
-
-
-
-
+                "IMS aktif";
 
 
 
@@ -496,13 +359,7 @@ async function loadMaster(){
 
 
 
-
-
-
             result.push(row);
-
-
-
 
 
 
@@ -515,18 +372,17 @@ async function loadMaster(){
 
 
 
-
-
         MASTER_STATE.data = result;
 
 
-        MASTER_STATE.filter = [...result];
+
+        MASTER_STATE.filter =
+
+        [...result];
 
 
-        MASTER_STATE.page = 1;
 
-
-
+        MASTER_STATE.page=1;
 
 
 
@@ -545,9 +401,20 @@ async function loadMaster(){
 
 
 
+        console.log(
+
+            "MASTER V11 LOAD OK",
+
+            result.length
+
+        );
+
+
+
 
 
     }
+
 
     catch(error){
 
@@ -555,7 +422,7 @@ async function loadMaster(){
 
         console.error(
 
-            "MASTER V10 LOAD ERROR",
+            "MASTER V11 ERROR",
 
             error
 
@@ -570,17 +437,13 @@ async function loadMaster(){
     }
 
 
-
     finally{
-
 
 
         showLoadingMaster(false);
 
 
-
     }
-
 
 
 
@@ -590,23 +453,16 @@ async function loadMaster(){
 
 
 
-
-
-
-
-
-
 // ========================================
-// PAGING
+// PAGE DATA
 // ========================================
 
 function getMasterPageData(){
 
 
-
     let start =
 
-    (MASTER_STATE.page - 1)
+    (MASTER_STATE.page-1)
 
     *
 
@@ -614,19 +470,13 @@ function getMasterPageData(){
 
 
 
-
-
     return MASTER_STATE.filter.slice(
-
 
         start,
 
-
         start + MASTER_STATE.limit
 
-
     );
-
 
 
 }
@@ -635,21 +485,17 @@ function getMasterPageData(){
 
 
 
-
-
-
 console.log(
-
-"MASTER V10 PART 1 READY"
-
+"MASTER V11 PART 1 READY"
 );
 
 // ========================================
-// MASTER MONITORING V10
+// MASTER MONITORING V11
 // PART 2 / 5
 // RENDER TABLE + SEARCH + FILTER
-// SESUAI HTML MASTER
+// OSS ACTIVE SYSTEM
 // ========================================
+
 
 
 // ========================================
@@ -678,8 +524,6 @@ function renderMasterTable(){
 
 
 
-
-
     let data =
 
     getMasterPageData();
@@ -689,13 +533,7 @@ function renderMasterTable(){
 
 
 
-
-
-    if(
-
-        data.length===0
-
-    ){
+    if(data.length===0){
 
 
 
@@ -704,11 +542,11 @@ function renderMasterTable(){
 
         <tr>
 
-        <td colspan="8">
+            <td colspan="8">
 
-        Tidak ada data aktif
+                Tidak ada data aktif OSS
 
-        </td>
+            </td>
 
         </tr>
 
@@ -720,15 +558,10 @@ function renderMasterTable(){
         updateMasterPageInfo();
 
 
-
         return;
 
 
-
     }
-
-
-
 
 
 
@@ -741,7 +574,6 @@ function renderMasterTable(){
 
 
 
-
     data.forEach(item=>{
 
 
@@ -749,74 +581,77 @@ function renderMasterTable(){
         html += `
 
 
+
         <tr>
 
 
-        <td>
 
-        ${item.wo || "-"}
+            <td>
 
-        </td>
+                ${item.wo || "-"}
 
-
-
-        <td>
-
-        ${item.reference_code || "-"}
-
-        </td>
+            </td>
 
 
 
-        <td>
+            <td>
 
-        ${item.customer || "-"}
+                ${item.reference_code || "-"}
 
-        </td>
-
-
-
-        <td>
-
-        ${item.city || "-"}
-
-        </td>
+            </td>
 
 
 
-        <td>
+            <td>
 
-        ${item.bulan || "-"}
+                ${item.customer || "-"}
 
-        </td>
-
-
-
-        <td>
-
-        ${item.job_name || "-"}
-
-        </td>
+            </td>
 
 
 
-        <td>
+            <td>
 
-        ${masterStatusBadge(item.status)}
+                ${item.city || "-"}
 
-        </td>
+            </td>
 
 
 
-        <td>
+            <td>
 
-        ${item.note || "-"}
+                ${item.bulan || "-"}
 
-        </td>
+            </td>
+
+
+
+            <td>
+
+                ${item.job_name || "-"}
+
+            </td>
+
+
+
+            <td>
+
+                ${masterStatusBadge(item.status)}
+
+            </td>
+
+
+
+            <td>
+
+                ${item.note || "-"}
+
+            </td>
 
 
 
         </tr>
+
 
 
         `;
@@ -830,15 +665,11 @@ function renderMasterTable(){
 
 
 
-
     tbody.innerHTML = html;
 
 
 
-
     updateMasterPageInfo();
-
-
 
 
 
@@ -899,6 +730,7 @@ function filterMaster(){
 
 
 
+
     let city =
 
     document.getElementById(
@@ -908,6 +740,7 @@ function filterMaster(){
     )
 
     ?.value || "";
+
 
 
 
@@ -929,6 +762,8 @@ function filterMaster(){
 
 
 
+
+
     let bulan =
 
     document.getElementById(
@@ -938,6 +773,8 @@ function filterMaster(){
     )
 
     ?.value || "";
+
+
 
 
 
@@ -963,11 +800,45 @@ function filterMaster(){
 
 
 
-
     MASTER_STATE.filter =
 
 
+
     MASTER_STATE.data.filter(item=>{
+
+
+
+
+
+        let text =
+
+
+
+        (
+
+            String(item.reference_code || "")
+
+            +
+
+            " "
+
+            +
+
+            String(item.customer || "")
+
+            +
+
+            " "
+
+            +
+
+            String(item.wo || "")
+
+        )
+
+        .toLowerCase();
+
+
 
 
 
@@ -979,16 +850,7 @@ function filterMaster(){
         !search ||
 
 
-
-        String(
-
-            item.reference_code
-
-        )
-
-        .toLowerCase()
-
-        .includes(search);
+        text.includes(search);
 
 
 
@@ -1001,7 +863,6 @@ function filterMaster(){
 
 
         !city ||
-
 
 
         item.city===city;
@@ -1019,7 +880,6 @@ function filterMaster(){
         !status ||
 
 
-
         item.status===status;
 
 
@@ -1033,7 +893,6 @@ function filterMaster(){
 
 
         !bulan ||
-
 
 
         item.bulan===bulan;
@@ -1051,12 +910,7 @@ function filterMaster(){
         !job ||
 
 
-
-        String(
-
-            item.job_name
-
-        )
+        String(item.job_name || "")
 
         .toLowerCase()
 
@@ -1094,8 +948,6 @@ function filterMaster(){
 
 
 
-
-
     MASTER_STATE.page=1;
 
 
@@ -1106,9 +958,8 @@ function filterMaster(){
 
 
 
+
 }
-
-
 
 
 
@@ -1127,6 +978,7 @@ function generateMasterFilter(){
 
 
     generateCityFilter();
+
 
 
     generateMonthFilter();
@@ -1173,7 +1025,6 @@ function generateCityFilter(){
 
 
 
-
     let cities =
 
 
@@ -1198,13 +1049,12 @@ function generateCityFilter(){
 
 
 
-
     let html = `
 
 
     <option value="">
 
-    Semua Kota
+        Semua Kota
 
     </option>
 
@@ -1220,6 +1070,7 @@ function generateCityFilter(){
     cities.forEach(city=>{
 
 
+
         if(city){
 
 
@@ -1229,7 +1080,7 @@ function generateCityFilter(){
 
             <option value="${city}">
 
-            ${city}
+                ${city}
 
             </option>
 
@@ -1248,14 +1099,11 @@ function generateCityFilter(){
 
 
 
-    el.innerHTML=html;
-
+    el.innerHTML = html;
 
 
 
 }
-
-
 
 
 
@@ -1293,7 +1141,6 @@ function generateMonthFilter(){
 
 
 
-
     let months =
 
 
@@ -1323,7 +1170,7 @@ function generateMonthFilter(){
 
     <option value="">
 
-    Semua Bulan
+        Semua Bulan
 
     </option>
 
@@ -1339,11 +1186,12 @@ function generateMonthFilter(){
     months.forEach(month=>{
 
 
+
         if(
 
             month &&
 
-            month!="-"
+            month !== "-"
 
         ){
 
@@ -1354,7 +1202,7 @@ function generateMonthFilter(){
 
             <option value="${month}">
 
-            ${month}
+                ${month}
 
             </option>
 
@@ -1373,8 +1221,8 @@ function generateMonthFilter(){
 
 
 
-    el.innerHTML=html;
 
+    el.innerHTML = html;
 
 
 
@@ -1390,15 +1238,15 @@ function generateMonthFilter(){
 
 console.log(
 
-"MASTER V10 PART 2 READY"
+"MASTER V11 PART 2 READY"
 
 );
 
 // ========================================
-// MASTER MONITORING V10
+// MASTER MONITORING V11
 // PART 3 / 5
-// STATUS BADGE + SUMMARY CARD
-// EXPORT EXCEL
+// SUMMARY CARD + STATUS BADGE + EXPORT
+// OSS ACTIVE BASED SYSTEM
 // ========================================
 
 
@@ -1409,61 +1257,49 @@ console.log(
 function masterStatusBadge(status){
 
 
-
     let cls="";
-
-
-
 
 
     switch(status){
 
 
-
         case "Sudah":
-
-
 
             cls="status-sudah";
 
-            break;
-
-
+        break;
 
 
 
         case "Progress":
 
-
-
             cls="status-progress";
 
-            break;
-
-
+        break;
 
 
 
         case "Revisi":
 
-
-
             cls="status-revisi";
 
-            break;
-
-
+        break;
 
 
 
         case "Belum":
 
+            cls="status-belum";
 
+        break;
+
+
+
+        default:
 
             cls="status-belum";
 
-            break;
-
+        break;
 
 
     }
@@ -1472,20 +1308,15 @@ function masterStatusBadge(status){
 
 
 
-
-
     return `
 
-
     <span class="badge ${cls}">
-
+    
     ${status || "-"}
 
     </span>
 
-
     `;
-
 
 
 }
@@ -1498,10 +1329,9 @@ function masterStatusBadge(status){
 
 
 
-
-
 // ========================================
 // UPDATE SUMMARY CARD
+// HANYA DARI OSS AKTIF
 // ========================================
 
 function updateMasterCard(){
@@ -1510,16 +1340,11 @@ function updateMasterCard(){
 
     let sudah=0;
 
-
     let progress=0;
-
 
     let revisi=0;
 
-
     let belum=0;
-
-
 
 
 
@@ -1531,57 +1356,43 @@ function updateMasterCard(){
 
 
 
+        switch(item.status){
 
 
-        if(item.status==="Sudah"){
+
+            case "Sudah":
+
+                sudah++;
+
+            break;
 
 
-            sudah++;
+
+            case "Progress":
+
+                progress++;
+
+            break;
+
+
+
+            case "Revisi":
+
+                revisi++;
+
+            break;
+
+
+
+            case "Belum":
+
+                belum++;
+
+            break;
+
 
 
         }
-
-
-
-
-
-        else if(item.status==="Progress"){
-
-
-            progress++;
-
-
-        }
-
-
-
-
-
-
-
-        else if(item.status==="Revisi"){
-
-
-            revisi++;
-
-
-        }
-
-
-
-
-
-
-
-        else if(item.status==="Belum"){
-
-
-            belum++;
-
-
-        }
-
-
 
 
 
@@ -1595,7 +1406,7 @@ function updateMasterCard(){
 
 
 
-    let el1 =
+    let elSudah =
 
     document.getElementById(
 
@@ -1605,7 +1416,7 @@ function updateMasterCard(){
 
 
 
-    let el2 =
+    let elProgress =
 
     document.getElementById(
 
@@ -1615,7 +1426,7 @@ function updateMasterCard(){
 
 
 
-    let el3 =
+    let elRevisi =
 
     document.getElementById(
 
@@ -1625,7 +1436,7 @@ function updateMasterCard(){
 
 
 
-    let el4 =
+    let elBelum =
 
     document.getElementById(
 
@@ -1640,38 +1451,27 @@ function updateMasterCard(){
 
 
 
+    if(elSudah)
 
-
-    if(el1)
-
-    el1.innerText=sudah;
-
+    elSudah.innerText=sudah;
 
 
 
+    if(elProgress)
 
-    if(el2)
-
-    el2.innerText=progress;
-
+    elProgress.innerText=progress;
 
 
 
+    if(elRevisi)
 
-    if(el3)
-
-    el3.innerText=revisi;
-
+    elRevisi.innerText=revisi;
 
 
 
+    if(elBelum)
 
-    if(el4)
-
-    el4.innerText=belum;
-
-
-
+    elBelum.innerText=belum;
 
 
 
@@ -1688,7 +1488,8 @@ function updateMasterCard(){
 
 
 // ========================================
-// EXPORT EXCEL MASTER
+// EXPORT MASTER EXCEL
+// DATA OSS SAJA
 // ========================================
 
 function exportMasterExcel(){
@@ -1696,23 +1497,16 @@ function exportMasterExcel(){
 
 
     if(
-
         typeof XLSX==="undefined"
-
     ){
 
 
-
         alert(
-
             "Library Excel belum aktif"
-
         );
 
 
-
         return;
-
 
 
     }
@@ -1724,19 +1518,10 @@ function exportMasterExcel(){
 
 
 
-
     let rows =
 
 
-
     MASTER_STATE.filter.map(item=>({
-
-
-
-        WO:
-
-        item.wo || "",
-
 
 
 
@@ -1761,9 +1546,9 @@ function exportMasterExcel(){
 
 
 
-        Bulan:
+        WO:
 
-        item.bulan || "",
+        item.wo || "",
 
 
 
@@ -1771,6 +1556,13 @@ function exportMasterExcel(){
         Job_Name:
 
         item.job_name || "",
+
+
+
+
+        Bulan:
+
+        item.bulan || "",
 
 
 
@@ -1804,14 +1596,12 @@ function exportMasterExcel(){
 
         alert(
 
-            "Tidak ada data"
+            "Tidak ada data OSS aktif"
 
         );
 
 
-
         return;
-
 
 
     }
@@ -1826,7 +1616,6 @@ function exportMasterExcel(){
 
     let ws =
 
-
     XLSX.utils.json_to_sheet(
 
         rows
@@ -1837,11 +1626,7 @@ function exportMasterExcel(){
 
 
 
-
-
-
     let wb =
-
 
     XLSX.utils.book_new();
 
@@ -1850,19 +1635,13 @@ function exportMasterExcel(){
 
 
 
-
-
     XLSX.utils.book_append_sheet(
-
 
         wb,
 
-
         ws,
 
-
-        "MASTER"
-
+        "MASTER OSS"
 
     );
 
@@ -1875,17 +1654,11 @@ function exportMasterExcel(){
 
     XLSX.writeFile(
 
-
         wb,
 
-
-        "MASTER_MONITORING.xlsx"
-
+        "MASTER_OSS_ACTIVE.xlsx"
 
     );
-
-
-
 
 
 
@@ -1899,87 +1672,119 @@ function exportMasterExcel(){
 
 
 
-
-
 // ========================================
-// UPDATE PAGE INFO
+// MASTER STATISTIC
+// UNTUK DASHBOARD
 // ========================================
 
-function updateMasterPageInfo(){
+function getMasterStatistic(){
 
 
 
-    let el =
-
-    document.getElementById(
-
-        "masterPageInfo"
-
-    );
+    let result={
 
 
-
-    if(!el)
-
-    return;
+        total:0,
 
 
+        sudah:0,
 
 
+        progress:0,
 
 
+        revisi:0,
 
 
-
-    let total =
-
-
-    Math.ceil(
+        belum:0
 
 
-        MASTER_STATE.filter.length /
-
-
-        MASTER_STATE.limit
-
-
-    );
+    };
 
 
 
 
 
+    MASTER_STATE.data.forEach(item=>{
 
 
 
-    el.innerText =
-
-
-    "Halaman "
-
-
-    +
-
-
-    MASTER_STATE.page
-
-
-    +
-
-
-    " / "
-
-
-    +
-
-
-    (total || 1);
+        result.total++;
 
 
 
+
+        if(item.status==="Sudah")
+
+        result.sudah++;
+
+
+
+
+        else if(item.status==="Progress")
+
+        result.progress++;
+
+
+
+
+        else if(item.status==="Revisi")
+
+        result.revisi++;
+
+
+
+
+        else
+
+        result.belum++;
+
+
+
+    });
+
+
+
+
+
+
+    return result;
 
 
 }
+
+
+
+
+
+
+
+
+// ========================================
+// EXPORT GLOBAL
+// ========================================
+
+window.updateMasterCard =
+
+updateMasterCard;
+
+
+
+window.masterStatusBadge =
+
+masterStatusBadge;
+
+
+
+window.exportMasterExcel =
+
+exportMasterExcel;
+
+
+
+window.getMasterStatistic =
+
+getMasterStatistic;
 
 
 
@@ -1991,15 +1796,15 @@ function updateMasterPageInfo(){
 
 console.log(
 
-"MASTER V10 PART 3 READY"
+"MASTER V11 PART 3 READY"
 
 );
 
 // ========================================
-// MASTER MONITORING V10
+// MASTER MONITORING V11
 // PART 4 / 5
-// PAGINATION + REALTIME + SYSTEM CONTROL
-// SESUAI HTML MASTER
+// PAGINATION + REALTIME + CONTROL
+// OSS ACTIVE BASED SYSTEM
 // ========================================
 
 
@@ -2010,24 +1815,13 @@ console.log(
 function nextMasterPage(){
 
 
-
-    let max =
-
-
-    Math.ceil(
-
+    let max = Math.ceil(
 
         MASTER_STATE.filter.length /
 
-
         MASTER_STATE.limit
 
-
     );
-
-
-
-
 
 
 
@@ -2038,13 +1832,10 @@ function nextMasterPage(){
     ){
 
 
-
         MASTER_STATE.page++;
 
 
-
         renderMasterTable();
-
 
 
     }
@@ -2052,8 +1843,6 @@ function nextMasterPage(){
 
 
 }
-
-
 
 
 
@@ -2078,13 +1867,66 @@ function prevMasterPage(){
     ){
 
 
-
         MASTER_STATE.page--;
-
 
 
         renderMasterTable();
 
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// REFRESH MASTER
+// ========================================
+
+async function refreshMaster(){
+
+
+
+    try{
+
+
+        MASTER_STATE.page=1;
+
+
+
+        await loadMaster();
+
+
+
+        console.log(
+
+            "MASTER REFRESH OK"
+
+        );
+
+
+
+    }
+
+
+    catch(error){
+
+
+        console.error(
+
+            "MASTER REFRESH ERROR",
+
+            error
+
+        );
 
 
     }
@@ -2104,35 +1946,7 @@ function prevMasterPage(){
 
 
 // ========================================
-// REFRESH MASTER
-// ========================================
-
-async function refreshMaster(){
-
-
-
-    MASTER_STATE.page=1;
-
-
-
-    await loadMaster();
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-// ========================================
-// REALTIME MASTER
+// REALTIME SYNC
 // ========================================
 
 function startMasterRealtime(){
@@ -2144,22 +1958,17 @@ function startMasterRealtime(){
 
 
 
-
-
     MASTER_STATE.timer =
 
 
     setInterval(()=>{
 
 
-
-        loadMaster();
-
+        refreshMaster();
 
 
 
     },60000);
-
 
 
 
@@ -2239,12 +2048,9 @@ function showLoadingMaster(status){
 
 
 
-
     if(!el)
 
     return;
-
-
 
 
 
@@ -2257,8 +2063,7 @@ function showLoadingMaster(status){
 
         el.innerHTML =
 
-        "⏳ Loading...";
-
+        "⏳ Sync OSS...";
 
 
     }
@@ -2266,12 +2071,11 @@ function showLoadingMaster(status){
     else{
 
 
-
         el.innerHTML =
 
+        "🟢 OSS Ready "
 
-        "🟢 Ready " +
-
+        +
 
         new Date()
 
@@ -2282,9 +2086,7 @@ function showLoadingMaster(status){
         );
 
 
-
     }
-
 
 
 
@@ -2318,8 +2120,6 @@ function showMasterError(){
 
 
 
-
-
     if(!tbody)
 
     return;
@@ -2329,18 +2129,14 @@ function showMasterError(){
 
 
 
-
-
     tbody.innerHTML = `
-
 
 
     <tr>
 
     <td colspan="8">
 
-
-    Gagal mengambil data Master
+    Gagal mengambil data OSS
 
 
     </td>
@@ -2349,8 +2145,6 @@ function showMasterError(){
 
 
     `;
-
-
 
 
 
@@ -2366,8 +2160,9 @@ function showMasterError(){
 
 
 
+
 // ========================================
-// INIT MASTER
+// INIT MASTER SYSTEM
 // ========================================
 
 async function initMasterSystem(){
@@ -2380,21 +2175,14 @@ async function initMasterSystem(){
 
         console.log(
 
-            "START MASTER V10"
+            "START MASTER V11"
 
         );
 
 
 
 
-
-
-
-
         await loadMaster();
-
-
-
 
 
 
@@ -2406,12 +2194,9 @@ async function initMasterSystem(){
 
 
 
-
-
-
         console.log(
 
-            "MASTER V10 READY"
+            "MASTER V11 READY"
 
         );
 
@@ -2435,15 +2220,11 @@ async function initMasterSystem(){
 
 
 
-
         showMasterError();
 
 
 
-
     }
-
-
 
 
 
@@ -2470,13 +2251,9 @@ loadMaster;
 
 
 
-
-
 window.refreshMaster =
 
 refreshMaster;
-
-
 
 
 
@@ -2486,13 +2263,9 @@ searchMaster;
 
 
 
-
-
 window.filterMaster =
 
 filterMaster;
-
-
 
 
 
@@ -2502,13 +2275,9 @@ exportMasterExcel;
 
 
 
-
-
 window.nextMasterPage =
 
 nextMasterPage;
-
-
 
 
 
@@ -2518,13 +2287,9 @@ prevMasterPage;
 
 
 
-
-
 window.startMasterRealtime =
 
 startMasterRealtime;
-
-
 
 
 
@@ -2542,22 +2307,19 @@ stopMasterRealtime;
 
 
 
+
 // ========================================
 // DOM READY
 // ========================================
 
 document.addEventListener(
 
-
 "DOMContentLoaded",
-
 
 ()=>{
 
 
-
     initMasterSystem();
-
 
 
 });
@@ -2578,16 +2340,12 @@ document.addEventListener(
 
 window.addEventListener(
 
-
 "beforeunload",
-
 
 ()=>{
 
 
-
     stopMasterRealtime();
-
 
 
 });
@@ -2599,22 +2357,24 @@ window.addEventListener(
 
 
 
+
 console.log(
 
-"MASTER V10 PART 4 READY"
+"MASTER V11 PART 4 READY"
 
 );
 
 // ========================================
-// MASTER MONITORING V10
+// MASTER MONITORING V11
 // PART 5 / 5
-// FINAL CLEANUP + DATA VALIDATION
-// OSS STATUS DONE PROTECTION
+// FINAL VALIDATION + CLEANUP
+// OSS ACTIVE PROTECTION
 // ========================================
 
 
 // ========================================
 // VALIDASI DATA MASTER
+// SUMBER UTAMA OSS
 // ========================================
 
 function validateMasterData(data){
@@ -2624,7 +2384,6 @@ function validateMasterData(data){
     if(!Array.isArray(data))
 
     return [];
-
 
 
 
@@ -2642,7 +2401,6 @@ function validateMasterData(data){
 
 
 
-
         let ref = String(
 
             item.reference_code || ""
@@ -2652,10 +2410,6 @@ function validateMasterData(data){
 
 
 
-
-
-
-        // reference wajib ada
 
         if(!ref)
 
@@ -2667,16 +2421,9 @@ function validateMasterData(data){
 
 
 
+        let status = String(
 
-        // keamanan tambahan
-
-        // jika status OSS DONE
-
-        // jangan tampil
-
-        let statusOSS = String(
-
-            item.status_oss || ""
+            item.status || ""
 
         )
 
@@ -2690,15 +2437,17 @@ function validateMasterData(data){
 
 
 
+        // keamanan
+
+        // jika sudah selesai jangan tampil
+
         if(
 
-            statusOSS==="DONE"
+            status==="DONE"
 
         ){
 
-
             return false;
-
 
         }
 
@@ -2716,7 +2465,6 @@ function validateMasterData(data){
 
 
 
-
 }
 
 
@@ -2727,11 +2475,16 @@ function validateMasterData(data){
 
 
 
+
+
 // ========================================
-// OVERRIDE LOAD MASTER FILTER
+// SAFE LOAD MASTER
 // ========================================
 
-const originalLoadMaster = loadMaster;
+const masterLoadOriginal =
+
+loadMaster;
+
 
 
 
@@ -2746,14 +2499,14 @@ async function loadMasterSafe(){
 
 
 
-        await originalLoadMaster();
+        await masterLoadOriginal();
+
 
 
 
 
 
         MASTER_STATE.data =
-
 
         validateMasterData(
 
@@ -2765,10 +2518,14 @@ async function loadMasterSafe(){
 
 
 
+
         MASTER_STATE.filter =
 
+        [
 
-        [...MASTER_STATE.data];
+            ...MASTER_STATE.data
+
+        ];
 
 
 
@@ -2776,6 +2533,7 @@ async function loadMasterSafe(){
 
 
         MASTER_STATE.page=1;
+
 
 
 
@@ -2791,11 +2549,19 @@ async function loadMasterSafe(){
 
 
 
+
+        updateMasterSyncTime();
+
+
+
+
+
+
     }
 
 
 
-    catch(e){
+    catch(error){
 
 
 
@@ -2803,7 +2569,7 @@ async function loadMasterSafe(){
 
             "MASTER SAFE ERROR",
 
-            e
+            error
 
         );
 
@@ -2823,15 +2589,21 @@ async function loadMasterSafe(){
 
 
 
+
+
 // ========================================
-// CHECK DATA DONE MANUAL
+// CEK REFERENCE AKTIF
 // ========================================
 
-function checkMasterDone(reference){
+function checkMasterReference(reference){
 
 
 
-    if(!DONE_CACHE)
+    if(
+
+        !reference
+
+    )
 
     return false;
 
@@ -2841,13 +2613,13 @@ function checkMasterDone(reference){
 
 
 
-    return DONE_CACHE.some(item=>{
+    return MASTER_STATE.data.some(item=>{
 
 
 
         return String(
 
-            item.reference_code || ""
+            item.reference_code
 
         )
 
@@ -2871,8 +2643,10 @@ function checkMasterDone(reference){
 
 
 
+
+
 // ========================================
-// CLEAN CACHE
+// CLEAR CACHE MASTER
 // ========================================
 
 function clearMasterCache(){
@@ -2899,8 +2673,11 @@ function clearMasterCache(){
 
 
 
+
+
+
 // ========================================
-// FORCE UPDATE
+// FORCE UPDATE MASTER
 // ========================================
 
 async function forceMasterUpdate(){
@@ -2917,25 +2694,6 @@ async function forceMasterUpdate(){
 
 
 
-        if(
-
-            typeof refreshCache === "function"
-
-        ){
-
-
-
-            await refreshCache();
-
-
-
-        }
-
-
-
-
-
-
 
         await loadMasterSafe();
 
@@ -2944,19 +2702,27 @@ async function forceMasterUpdate(){
 
 
 
+        console.log(
+
+            "FORCE MASTER UPDATE OK"
+
+        );
+
+
+
     }
 
 
 
-    catch(e){
+    catch(error){
 
 
 
         console.error(
 
-            "FORCE UPDATE ERROR",
+            "FORCE MASTER UPDATE ERROR",
 
-            e
+            error
 
         );
 
@@ -2976,74 +2742,50 @@ async function forceMasterUpdate(){
 
 
 
-// ========================================
-// GLOBAL ACCESS TAMBAHAN
-// ========================================
 
-
-window.loadMasterSafe =
-
-loadMasterSafe;
-
-
-
-window.forceMasterUpdate =
-
-forceMasterUpdate;
-
-
-
-window.clearMasterCache =
-
-clearMasterCache;
-
-
-
-
-
-
-
-
-
-console.log(
-
-"MASTER V10 PART 5 READY"
-
-);
 
 // ========================================
-// MASTER SYNC TIME INFO
-// TAMBAHAN V8
+// SYNC TIME INFO
 // ========================================
-
 
 function updateMasterSyncTime(){
 
 
+
     let el =
+
     document.getElementById(
+
         "loadingMaster"
+
     );
 
 
+
+
+
     if(!el)
+
     return;
 
 
 
-    let now =
-    new Date();
 
 
 
     el.innerHTML =
 
-    "🟢 Sync terakhir : "
+
+    "🟢 OSS Sync : "
 
     +
 
-    now.toLocaleString(
+    new Date()
+
+    .toLocaleString(
+
         "id-ID"
+
     );
 
 
@@ -3056,28 +2798,54 @@ function updateMasterSyncTime(){
 
 
 
+
+
+
+
 // ========================================
-// WRAP LOAD MASTER LAMA
+// MASTER HEALTH CHECK
 // ========================================
 
-const oldLoadMaster =
-window.loadMaster;
+function masterHealthCheck(){
 
 
 
-window.loadMaster = async function(){
+    let result={
 
 
 
-    await oldLoadMaster();
+        total:
+
+        MASTER_STATE.data.length,
 
 
 
-    updateMasterSyncTime();
+        page:
+
+        MASTER_STATE.page,
 
 
 
-};
+        time:
+
+        new Date()
+
+
+
+    };
+
+
+
+
+    console.table(result);
+
+
+
+    return result;
+
+
+
+}
 
 
 
@@ -3085,7 +2853,100 @@ window.loadMaster = async function(){
 
 
 
+
+
+
+
+// ========================================
+// GLOBAL EXPORT
+// ========================================
+
+window.loadMasterSafe =
+
+loadMasterSafe;
+
+
+
+
+window.forceMasterUpdate =
+
+forceMasterUpdate;
+
+
+
+
+window.clearMasterCache =
+
+clearMasterCache;
+
+
+
+
+window.checkMasterReference =
+
+checkMasterReference;
+
+
+
+
+window.masterHealthCheck =
+
+masterHealthCheck;
+
+
+
+
+
+
+
+
+
+
+
+
+// ========================================
+// AUTO START
+// ========================================
+
+document.addEventListener(
+
+"visibilitychange",
+
+()=>{
+
+
+    if(
+
+        document.visibilityState==="visible"
+
+    ){
+
+
+        loadMasterSafe();
+
+
+    }
+
+
+
+});
+
+
+
+
+
+
+
+
+
+
+
+// ========================================
+// FINAL READY
+// ========================================
 
 console.log(
-"MASTER SYNC TIME ADDON READY"
+
+"MASTER V11 PART 5 FINAL READY"
+
 );
