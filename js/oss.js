@@ -2692,6 +2692,36 @@ console.log(
 
 );
 
+
+// ========================================
+// REMOVE DUPLIKAT REFERENCE CODE
+// ========================================
+
+function removeDuplicateByReference(rows){
+
+    const map = {};
+
+    return rows.filter(item=>{
+
+        const ref = String(
+            item.reference_code || ""
+        ).trim();
+
+        if(!ref){
+            return false;
+        }
+
+        if(map[ref]){
+            return false;
+        }
+
+        map[ref] = true;
+
+        return true;
+
+    });
+
+}
 // ========================================
 // OSS MANAGEMENT SYSTEM V6
 // PART 5 FINAL
