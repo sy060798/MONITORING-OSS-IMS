@@ -1,142 +1,211 @@
 // ========================================
-// DASHBOARD MONITORING V3
-// UI ONLY
-// FOLLOW API.JS
+// DASHBOARD JS V3
+// OSS IMS MONITORING
+// API.JS V3 COMPATIBLE
 // ========================================
 
-let dashboardState = {
-    data: null
-};
+
+let dashboardData = {};
 
 let statusChart = null;
 
 let dashboardTimer = null;
 
+
 // ========================================
 // LOAD DASHBOARD
 // ========================================
 
-async function loadDashboard() {
+async function loadDashboard(){
 
-    try {
 
-        setDashboardLoading(true);
+    try{
 
-        const result = await getDashboard();
 
-        dashboardState.data = result || {};
+        dashboardLoading(true);
 
-        updateDashboardCard();
 
-        updateStatusChart();
 
-        updateLastUpdate();
+        const result = await getDashboardAPI();
+
+
+
+        dashboardData = result || {};
+
+
+
+        renderDashboard();
+
+
+
+        updateChart();
+
+
 
         updateAPIStatus(true);
 
+
+
+        updateLastUpdate();
+
+
+
     }
 
-    catch (error) {
+
+
+    catch(error){
+
+
 
         console.error(
-            "LOAD DASHBOARD ERROR",
+
+            "DASHBOARD ERROR",
+
             error
+
         );
+
+
 
         updateAPIStatus(false);
 
-    }
 
-    finally {
-
-        setDashboardLoading(false);
 
     }
+
+
+
+    finally{
+
+
+        dashboardLoading(false);
+
+
+    }
+
+
 
 }
 
+
+
+
+
 // ========================================
-// UPDATE DASHBOARD CARD
+// RENDER CARD
 // ========================================
 
-function updateDashboardCard() {
+function renderDashboard(){
 
-    const data = dashboardState.data || {};
 
-    setText(
+
+    setValue(
+
         "totalOSS",
-        (data.totalOSS || 0) + " Data"
+
+        dashboardData.totalOSS || 0
+
     );
 
-    setText(
+
+
+    setValue(
+
         "totalIMS",
-        (data.totalIMS || 0) + " Data"
+
+        dashboardData.totalIMS || 0
+
     );
 
-    setText(
+
+
+    setValue(
+
         "totalMaster",
-        (data.totalMaster || 0) + " Data"
+
+        dashboardData.totalMaster || 0
+
     );
 
-    setText(
+
+
+    setValue(
+
         "totalBelum",
-        (data.belumIMS || 0) + " Data"
+
+        dashboardData.belumIMS || 0
+
     );
 
-    setText(
+
+
+
+
+    setValue(
+
         "done",
-        data.sudah || 0
+
+        dashboardData.selesai || 0
+
     );
 
-    setText(
+
+
+    setValue(
+
         "progress",
-        data.progress || 0
+
+        dashboardData.progress || 0
+
     );
 
-    setText(
+
+
+    setValue(
+
         "revisi",
-        data.revisi || 0
+
+        dashboardData.revisi || 0
+
     );
 
-    setText(
+
+
+    setValue(
+
         "belum",
-        data.belumIMS || 0
+
+        dashboardData.belumIMS || 0
+
     );
 
-}
 
-// ========================================
-// GET STATUS DATA
-// ========================================
-
-function getStatusData() {
-
-    const data = dashboardState.data || {};
-
-    return {
-
-        sudah: data.sudah || 0,
-
-        progress: data.progress || 0,
-
-        revisi: data.revisi || 0,
-
-        belum: data.belumIMS || 0
-
-    };
 
 }
 
+
+
+
+
+
 // ========================================
-// CREATE / UPDATE STATUS CHART
+// CHART
 // ========================================
 
-function updateStatusChart() {
+function updateChart(){
 
-    let canvas =
+
+
+    const canvas =
+
     document.getElementById(
+
         "statusChart"
+
     );
+
+
 
 
     if(!canvas){
@@ -147,28 +216,26 @@ function updateStatusChart() {
 
 
 
-    let status = getStatusData();
+
+
+    if(typeof Chart==="undefined"){
+
+        return;
+
+    }
+
+
 
 
 
     if(statusChart){
 
+
         statusChart.destroy();
 
-    }
-
-
-
-
-    if(typeof Chart === "undefined"){
-
-        console.error(
-            "Chart library belum aktif"
-        );
-
-        return;
 
     }
+
 
 
 
@@ -180,10 +247,13 @@ function updateStatusChart() {
 
         {
 
+
             type:"doughnut",
 
 
+
             data:{
+
 
 
                 labels:[
@@ -203,19 +273,25 @@ function updateStatusChart() {
                 datasets:[{
 
 
+
+
                     data:[
 
 
-                        status.sudah,
+                        dashboardData.selesai || 0,
 
-                        status.progress,
 
-                        status.revisi,
+                        dashboardData.progress || 0,
 
-                        status.belum
+
+                        dashboardData.revisi || 0,
+
+
+                        dashboardData.belumIMS || 0
 
 
                     ],
+
 
 
 
@@ -235,6 +311,7 @@ function updateStatusChart() {
 
 
 
+
                     borderWidth:0
 
 
@@ -242,11 +319,15 @@ function updateStatusChart() {
                 }]
 
 
+
             },
 
 
 
+
+
             options:{
+
 
 
                 responsive:true,
@@ -274,13 +355,18 @@ function updateStatusChart() {
                 }
 
 
+
             }
+
 
 
 
         }
 
+
+
     );
+
 
 
 }
@@ -289,14 +375,49 @@ function updateStatusChart() {
 
 
 
+
 // ========================================
-// UPDATE LAST UPDATE
+// UPDATE TEXT
+// ========================================
+
+function setValue(id,value){
+
+
+
+    const el =
+
+    document.getElementById(id);
+
+
+
+    if(el){
+
+
+
+        el.innerText = value;
+
+
+
+    }
+
+
+
+}
+
+// ========================================
+// DASHBOARD JS V3
+// PART 2/2
+// ========================================
+
+
+// ========================================
+// LAST UPDATE
 // ========================================
 
 function updateLastUpdate(){
 
 
-    setText(
+    setValue(
 
         "lastUpdate",
 
@@ -317,6 +438,8 @@ function updateLastUpdate(){
 
 
 
+
+
 // ========================================
 // API STATUS
 // ========================================
@@ -324,7 +447,8 @@ function updateLastUpdate(){
 function updateAPIStatus(status){
 
 
-    let el =
+
+    const el =
 
     document.getElementById(
 
@@ -344,7 +468,9 @@ function updateAPIStatus(status){
 
 
 
+
     if(status){
+
 
 
         el.innerHTML =
@@ -352,10 +478,11 @@ function updateAPIStatus(status){
         "🟢 Online";
 
 
+
     }
 
-
     else{
+
 
 
         el.innerHTML =
@@ -363,6 +490,7 @@ function updateAPIStatus(status){
         "🔴 Offline";
 
 
+
     }
 
 
@@ -373,42 +501,17 @@ function updateAPIStatus(status){
 
 
 
-// ========================================
-// SET TEXT HELPER
-// ========================================
-
-function setText(id,value){
-
-
-    let element =
-
-    document.getElementById(id);
-
-
-
-    if(element){
-
-
-        element.innerText = value;
-
-
-    }
-
-
-}
-
-
-
 
 
 // ========================================
-// LOADING CONTROL
+// LOADING
 // ========================================
 
-function setDashboardLoading(state){
+function dashboardLoading(state){
 
 
-    let status =
+
+    const el =
 
     document.getElementById(
 
@@ -419,7 +522,7 @@ function setDashboardLoading(state){
 
 
 
-    if(!status){
+    if(!el){
 
         return;
 
@@ -432,18 +535,17 @@ function setDashboardLoading(state){
     if(state){
 
 
-        status.innerText =
+        el.innerText =
 
         "Loading...";
 
 
     }
 
-
     else{
 
 
-        status.innerText =
+        el.innerText =
 
         "Realtime";
 
@@ -451,31 +553,44 @@ function setDashboardLoading(state){
     }
 
 
-
-}
-
-// ========================================
-// REFRESH DASHBOARD MANUAL
-// ========================================
-
-function refreshDashboard(){
-
-    loadDashboard();
-
 }
 
 
 
 
 
+
+
 // ========================================
-// REALTIME DASHBOARD
+// MANUAL REFRESH
 // ========================================
 
-function startDashboardRealtime(delay = 60000){
+async function refreshDashboard(){
+
+
+
+    await loadDashboard();
+
+
+
+}
+
+
+
+
+
+
+
+// ========================================
+// REALTIME
+// ========================================
+
+function startDashboardRealtime(delay=60000){
+
 
 
     stopDashboardRealtime();
+
 
 
 
@@ -484,15 +599,18 @@ function startDashboardRealtime(delay = 60000){
     setInterval(()=>{
 
 
+
         loadDashboard();
 
 
 
-    }, delay);
+    },delay);
 
 
 
 }
+
+
 
 
 
@@ -505,7 +623,9 @@ function startDashboardRealtime(delay = 60000){
 function stopDashboardRealtime(){
 
 
+
     if(dashboardTimer){
+
 
 
         clearInterval(
@@ -515,7 +635,9 @@ function stopDashboardRealtime(){
         );
 
 
-        dashboardTimer = null;
+
+        dashboardTimer=null;
+
 
 
     }
@@ -527,14 +649,18 @@ function stopDashboardRealtime(){
 
 
 
+
+
 // ========================================
-// SAFE LOAD DASHBOARD
+// SAFE LOAD
 // ========================================
 
 async function safeLoadDashboard(){
 
 
+
     try{
+
 
 
         await loadDashboard();
@@ -542,6 +668,7 @@ async function safeLoadDashboard(){
 
 
     }
+
 
 
     catch(error){
@@ -565,17 +692,31 @@ async function safeLoadDashboard(){
     }
 
 
+
 }
 
 
 
 
 
+
+
 // ========================================
-// AUTO REFRESH CONTROL
+// INIT
 // ========================================
 
-function enableDashboardRealtime(){
+document.addEventListener(
+
+
+"DOMContentLoaded",
+
+
+()=>{
+
+
+
+    safeLoadDashboard();
+
 
 
     startDashboardRealtime(
@@ -585,46 +726,15 @@ function enableDashboardRealtime(){
     );
 
 
-}
-
-
-
-
-
-function disableDashboardRealtime(){
-
-
-    stopDashboardRealtime();
-
 
 }
 
 
 
-
-
-// ========================================
-// INIT DASHBOARD
-// ========================================
-
-document.addEventListener(
-
-    "DOMContentLoaded",
-
-    ()=>{
-
-
-        loadDashboard();
-
-
-        startDashboardRealtime();
-
-
-
-    }
 
 
 );
+
 
 
 
@@ -637,27 +747,37 @@ document.addEventListener(
 
 window.addEventListener(
 
-    "beforeunload",
 
-    ()=>{
-
-
-        stopDashboardRealtime();
+"beforeunload",
 
 
-        if(statusChart){
+()=>{
 
 
-            statusChart.destroy();
+
+    stopDashboardRealtime();
 
 
-            statusChart = null;
 
 
-        }
+    if(statusChart){
+
+
+
+        statusChart.destroy();
+
+
+
+        statusChart=null;
+
 
 
     }
+
+
+
+}
+
 
 
 );
@@ -667,12 +787,9 @@ window.addEventListener(
 
 
 
-// ========================================
-// FINAL READY
-// ========================================
 
 console.log(
 
-    "DASHBOARD V3 READY - API.JS MODE"
+"DASHBOARD JS V3 COMPLETE"
 
 );
