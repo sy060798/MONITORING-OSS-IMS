@@ -1,8 +1,8 @@
 // ========================================
 // OSS IMS MONITORING
-// API JS V3 FINAL CLEAN
+// API JS V4 FINAL FIX
 // PART 1
-// CORE + OSS MODULE
+// CORE + API REQUEST + OSS MODULE
 // ========================================
 
 
@@ -14,27 +14,31 @@ const API_URL =
 "https://script.google.com/macros/s/AKfycby__Lw6UXk4CezUKiTHIs0F-EXmEK3eaQfyBkfckdBjXGc5dOJxRwtZ_ILbg9h54ylb/exec";
 
 
-
 const PAGE_LIMIT = 100;
+
 
 
 
 // ========================================
 // CACHE GLOBAL
-// JANGAN DUPLIKAT
 // ========================================
 
 let OSS_CACHE = [];
+
 let IMS_CACHE = [];
+
 let MASTER_CACHE = [];
+
 let DONE_CACHE = [];
 
 
 
 
 // ========================================
-// API REQUEST
+// API REQUEST CLEAN
+// FIX DOUBLE RESPONSE
 // ========================================
+
 
 async function apiRequest(action,data={}){
 
@@ -42,7 +46,7 @@ async function apiRequest(action,data={}){
     try{
 
 
-        const res = await fetch(
+        const response = await fetch(
 
             API_URL,
 
@@ -57,6 +61,7 @@ async function apiRequest(action,data={}){
 
                 },
 
+
                 body:JSON.stringify({
 
                     action:action,
@@ -70,41 +75,61 @@ async function apiRequest(action,data={}){
         );
 
 
-        const json = await res.json();
+
+        const json = await response.json();
 
 
-        return {
 
-            success:true,
+        console.log(
 
-            data:json
+            "API RESPONSE",
 
-        };
+            action,
 
+            json
 
-    }
-
-    catch(e){
-
-
-        console.error(
-            "API ERROR",
-            e
         );
 
 
+
+        return json;
+
+
+
+    }
+
+
+    catch(error){
+
+
+
+        console.error(
+
+            "API ERROR",
+
+            error
+
+        );
+
+
+
         return {
+
 
             success:false,
 
+
             data:[],
 
-            message:e.message
+
+            message:error.message
+
 
         };
 
 
     }
+
 
 
 }
@@ -114,9 +139,12 @@ async function apiRequest(action,data={}){
 
 
 
+
+
 // ========================================
 // SAFE REQUEST
 // ========================================
+
 
 async function safeRequest(action,data={}){
 
@@ -135,7 +163,9 @@ async function safeRequest(action,data={}){
 
 
         console.error(
+
             result.message
+
         );
 
 
@@ -146,7 +176,6 @@ async function safeRequest(action,data={}){
     return result;
 
 
-
 }
 
 
@@ -154,9 +183,12 @@ async function safeRequest(action,data={}){
 
 
 
+
+
 // ========================================
-// CONNECTION
+// TEST CONNECTION
 // ========================================
+
 
 async function testConnection(){
 
@@ -176,11 +208,16 @@ async function testConnection(){
 
 
 
+
+
+
 // ========================================
-// PAGING
+// PAGE REQUEST
 // ========================================
 
+
 async function pageRequest(action,page=1){
+
 
 
     return await safeRequest(
@@ -189,9 +226,12 @@ async function pageRequest(action,page=1){
 
         {
 
+
             page:page,
 
+
             limit:PAGE_LIMIT
+
 
         }
 
@@ -205,9 +245,12 @@ async function pageRequest(action,page=1){
 
 
 
+
+
 // ========================================
-// OSS GET
+// GET OSS
 // ========================================
+
 
 async function getOSS(page=1){
 
@@ -223,18 +266,36 @@ async function getOSS(page=1){
 
 
 
+
     if(result.success){
+
 
 
         OSS_CACHE =
 
-        result.data || [];
+
+        Array.isArray(result.data)
+
+
+        ?
+
+
+        result.data
+
+
+        :
+
+
+        [];
+
 
 
     }
 
 
+
     return OSS_CACHE;
+
 
 
 }
@@ -245,15 +306,18 @@ async function getOSS(page=1){
 
 
 
+
 // ========================================
-// OSS GET ALL
+// GET ALL OSS
 // ========================================
+
 
 async function getAllOSS(){
 
 
 
     let page=1;
+
 
     let all=[];
 
@@ -275,17 +339,28 @@ async function getAllOSS(){
 
         if(
 
+
             !result.success ||
 
-            !result.data ||
+
+            !Array.isArray(result.data)
+
+
+            ||
+
 
             result.data.length===0
 
+
         ){
+
 
             break;
 
+
         }
+
+
 
 
 
@@ -297,13 +372,16 @@ async function getAllOSS(){
 
 
 
+
         if(
 
             result.data.length < PAGE_LIMIT
 
         ){
 
+
             break;
+
 
         }
 
@@ -312,12 +390,15 @@ async function getAllOSS(){
         page++;
 
 
+
     }
 
 
 
 
-    OSS_CACHE=all;
+
+    OSS_CACHE = all;
+
 
 
     return all;
@@ -332,11 +413,15 @@ async function getAllOSS(){
 
 
 
+
+
 // ========================================
 // ADD OSS
 // ========================================
 
+
 async function addOSSAPI(data){
+
 
 
     const result = await safeRequest(
@@ -348,7 +433,9 @@ async function addOSSAPI(data){
     );
 
 
+
     await getOSS(1);
+
 
 
     return result;
@@ -356,6 +443,8 @@ async function addOSSAPI(data){
 
 
 }
+
+
 
 
 
@@ -367,7 +456,9 @@ async function addOSSAPI(data){
 // UPDATE OSS
 // ========================================
 
+
 async function updateOSSAPI(data){
+
 
 
     const result = await safeRequest(
@@ -379,13 +470,18 @@ async function updateOSSAPI(data){
     );
 
 
+
     await getOSS(1);
+
 
 
     return result;
 
 
+
 }
+
+
 
 
 
@@ -397,7 +493,9 @@ async function updateOSSAPI(data){
 // DELETE OSS
 // ========================================
 
+
 async function deleteOSSAPI(id){
+
 
 
     const result = await safeRequest(
@@ -413,7 +511,9 @@ async function deleteOSSAPI(id){
     );
 
 
+
     await getOSS(1);
+
 
 
     return result;
@@ -428,9 +528,12 @@ async function deleteOSSAPI(id){
 
 
 
+
+
 // ========================================
-// BULK OSS EXCEL
+// BULK OSS
 // ========================================
+
 
 async function bulkAddOSSAPI(rows){
 
@@ -445,7 +548,9 @@ async function bulkAddOSSAPI(rows){
     );
 
 
+
     await getOSS(1);
+
 
 
     return result;
@@ -458,22 +563,37 @@ async function bulkAddOSSAPI(rows){
 
 
 
+
+
+
 // ========================================
 // FIND OSS
 // ========================================
 
-function findOSS(ref){
+
+function findOSS(reference){
 
 
-    return OSS_CACHE.find(x=>
 
-        String(x.reference_code)
+    return OSS_CACHE.find(item=>{
+
+
+        return String(
+
+            item.reference_code
+
+        )
+
 
         ===
 
-        String(ref)
 
-    );
+        String(reference);
+
+
+
+    });
+
 
 
 }
@@ -482,23 +602,22 @@ function findOSS(ref){
 
 
 
-
 console.log(
 
-"API JS V3 PART 1 READY"
+"API JS V4 PART 1 READY"
 
 );
 
 // ========================================
 // OSS IMS MONITORING
-// API JS V3 FINAL CLEAN
+// API JS V4 FINAL FIX
 // PART 2
 // IMS + MASTER + DONE MODULE
 // ========================================
 
 
 // ========================================
-// IMS GET
+// GET IMS
 // ========================================
 
 async function getIMS(page=1){
@@ -517,15 +636,32 @@ async function getIMS(page=1){
     if(result.success){
 
 
+
         IMS_CACHE =
 
-        result.data || [];
+
+        Array.isArray(result.data)
+
+
+        ?
+
+
+        result.data
+
+
+        :
+
+
+        [];
+
 
 
     }
 
 
+
     return IMS_CACHE;
+
 
 
 }
@@ -535,16 +671,21 @@ async function getIMS(page=1){
 
 
 
+
+
 // ========================================
-// IMS GET ALL
+// GET ALL IMS
 // ========================================
 
 async function getAllIMS(){
 
 
+
     let page=1;
 
+
     let all=[];
+
 
 
 
@@ -562,19 +703,31 @@ async function getAllIMS(){
 
 
 
+
         if(
+
 
             !result.success ||
 
-            !result.data ||
+
+            !Array.isArray(result.data)
+
+
+            ||
+
 
             result.data.length===0
 
+
         ){
+
 
             break;
 
+
         }
+
+
 
 
 
@@ -586,13 +739,16 @@ async function getAllIMS(){
 
 
 
+
         if(
 
             result.data.length < PAGE_LIMIT
 
         ){
 
+
             break;
+
 
         }
 
@@ -601,12 +757,15 @@ async function getAllIMS(){
         page++;
 
 
+
     }
 
 
 
 
+
     IMS_CACHE=all;
+
 
 
     return all;
@@ -621,11 +780,14 @@ async function getAllIMS(){
 
 
 
+
+
 // ========================================
 // ADD IMS
 // ========================================
 
 async function addIMSAPI(data){
+
 
 
     const result = await safeRequest(
@@ -654,11 +816,14 @@ async function addIMSAPI(data){
 
 
 
+
+
 // ========================================
 // UPDATE IMS
 // ========================================
 
 async function updateIMSAPI(data){
+
 
 
     const result = await safeRequest(
@@ -687,11 +852,14 @@ async function updateIMSAPI(data){
 
 
 
+
+
 // ========================================
 // DELETE IMS
 // ========================================
 
 async function deleteIMSAPI(id){
+
 
 
     const result = await safeRequest(
@@ -724,11 +892,14 @@ async function deleteIMSAPI(id){
 
 
 
+
+
 // ========================================
-// BULK IMS EXCEL
+// BULK IMS
 // ========================================
 
 async function bulkAddIMSAPI(rows){
+
 
 
     const result = await safeRequest(
@@ -758,27 +929,38 @@ async function bulkAddIMSAPI(rows){
 
 
 
+
 // ========================================
 // FIND IMS
 // ========================================
 
-function findIMS(ref){
+function findIMS(reference){
 
 
-    return IMS_CACHE.find(x=>
+
+    return IMS_CACHE.find(item=>{
 
 
-        String(x.reference_code)
+        return String(
+
+            item.reference_code
+
+        )
+
 
         ===
 
-        String(ref)
+
+        String(reference);
 
 
-    );
+
+    });
+
 
 
 }
+
 
 
 
@@ -792,6 +974,7 @@ function findIMS(ref){
 // ========================================
 
 async function getMasterAPI(){
+
 
 
     const result = await safeRequest(
@@ -810,12 +993,29 @@ async function getMasterAPI(){
 
 
 
+
+
     if(result.success){
+
 
 
         MASTER_CACHE =
 
-        result.data || [];
+
+        Array.isArray(result.data)
+
+
+        ?
+
+
+        result.data
+
+
+        :
+
+
+        [];
+
 
 
     }
@@ -835,11 +1035,13 @@ async function getMasterAPI(){
 
 
 
+
 // ========================================
 // DONE GET
 // ========================================
 
 async function getDONEAPI(){
+
 
 
     const result = await safeRequest(
@@ -858,15 +1060,33 @@ async function getDONEAPI(){
 
 
 
+
+
     if(result.success){
+
 
 
         DONE_CACHE =
 
-        result.data || [];
+
+        Array.isArray(result.data)
+
+
+        ?
+
+
+        result.data
+
+
+        :
+
+
+        [];
+
 
 
     }
+
 
 
 
@@ -875,6 +1095,7 @@ async function getDONEAPI(){
 
 
 }
+
 
 
 
@@ -921,11 +1142,13 @@ async function syncDONEAPI(){
 
 
 
+
 // ========================================
-// DASHBOARD API
+// DASHBOARD
 // ========================================
 
 async function getDashboardAPI(){
+
 
 
     const result = await safeRequest(
@@ -941,7 +1164,9 @@ async function getDashboardAPI(){
     if(result.success){
 
 
+
         return result.data || {};
+
 
 
     }
@@ -961,6 +1186,7 @@ async function getDashboardAPI(){
 
 
 
+
 // ========================================
 // REFRESH ALL CACHE
 // ========================================
@@ -968,16 +1194,21 @@ async function getDashboardAPI(){
 async function refreshAllData(){
 
 
+
     await getOSS(1);
+
 
 
     await getIMS(1);
 
 
+
     await getMasterAPI();
 
 
+
     await getDONEAPI();
+
 
 
 
@@ -993,29 +1224,76 @@ async function refreshAllData(){
 
 
 
+
 console.log(
 
-"API JS V3 PART 2 READY"
+"API JS V4 PART 2 READY"
 
 );
 
 // ========================================
-// OSS IMS MONITORING
-// API JS V3 FINAL CLEAN
+// API JS V4
 // PART 3
-// UI CONTROLLER + CRUD + EXCEL IMPORT EXPORT
+// UI CONTROLLER + CRUD CONNECTOR
 // ========================================
 
 
 // ========================================
-// GLOBAL EDIT
+// GLOBAL STATE
 // ========================================
 
-let EDIT_MODE = "";
-
+let EDIT_TYPE = "";
 let EDIT_ID = null;
 
 
+
+
+
+// ========================================
+// HELPER VALUE
+// ========================================
+
+
+function getValue(id){
+
+    const el =
+    document.getElementById(id);
+
+    return el ? el.value.trim() : "";
+
+}
+
+
+
+function setValue(id,value){
+
+    const el =
+    document.getElementById(id);
+
+    if(el){
+
+        el.value = value || "";
+
+    }
+
+}
+
+
+
+
+
+function setText(id,value){
+
+    const el =
+    document.getElementById(id);
+
+    if(el){
+
+        el.innerText = value ?? "";
+
+    }
+
+}
 
 
 
@@ -1025,16 +1303,17 @@ let EDIT_ID = null;
 // MODAL
 // ========================================
 
-function showModal(id){
 
+function openModal(id){
 
-    const el=document.getElementById(id);
+    const el =
+    document.getElementById(id);
 
+    if(el){
 
-    if(el)
+        el.style.display="flex";
 
-    el.style.display="block";
-
+    }
 
 }
 
@@ -1042,51 +1321,14 @@ function showModal(id){
 
 function closeModal(id){
 
+    const el =
+    document.getElementById(id);
 
-    const el=document.getElementById(id);
+    if(el){
 
+        el.style.display="none";
 
-    if(el)
-
-    el.style.display="none";
-
-
-}
-
-
-
-
-
-
-
-
-// ========================================
-// VALUE HELPER
-// ========================================
-
-function getValue(id){
-
-
-    const el=document.getElementById(id);
-
-
-    return el ? el.value : "";
-
-
-}
-
-
-
-function setValue(id,value){
-
-
-    const el=document.getElementById(id);
-
-
-    if(el)
-
-    el.value=value;
-
+    }
 
 }
 
@@ -1094,67 +1336,51 @@ function setValue(id,value){
 
 
 
-
-
-
-
 // ========================================
-// OPEN OSS
+// OSS FORM
 // ========================================
+
 
 function openOSSForm(data={}){
 
 
-    EDIT_MODE="OSS";
+    EDIT_TYPE="OSS";
 
     EDIT_ID=data.id || null;
 
 
 
     setValue(
-
-        "oss_reference",
-
-        data.reference_code || ""
-
+        "referenceCode",
+        data.reference_code
     );
 
 
     setValue(
-
-        "oss_cust",
-
-        data.cust_id || ""
-
+        "custID",
+        data.cust_id
     );
 
 
     setValue(
-
-        "oss_customer",
-
-        data.customer || ""
-
+        "customer",
+        data.customer
     );
 
 
     setValue(
-
-        "oss_city",
-
-        data.city || ""
-
+        "city",
+        data.city
     );
 
 
 
-    showModal("ossModal");
+    openModal(
+        "modalOSS"
+    );
 
 
 }
-
-
-
 
 
 
@@ -1164,33 +1390,38 @@ function openOSSForm(data={}){
 // SAVE OSS
 // ========================================
 
-async function saveOSS(){
+
+async function submitOSS(){
 
 
 
-    let data={
+    let payload={
 
 
         id:EDIT_ID,
 
 
-        reference_code:getValue(
-            "oss_reference"
+        reference_code:
+        getValue(
+            "referenceCode"
         ),
 
 
-        cust_id:getValue(
-            "oss_cust"
+        cust_id:
+        getValue(
+            "custID"
         ),
 
 
-        customer:getValue(
-            "oss_customer"
+        customer:
+        getValue(
+            "customer"
         ),
 
 
-        city:getValue(
-            "oss_city"
+        city:
+        getValue(
+            "city"
         )
 
 
@@ -1204,19 +1435,16 @@ async function saveOSS(){
 
 
     if(
-
-        EDIT_MODE==="OSS"
-
+        EDIT_TYPE==="OSS"
         &&
-
         EDIT_ID
-
     ){
 
 
-        result=
-
-        await updateOSSAPI(data);
+        result =
+        await updateOSSAPI(
+            payload
+        );
 
 
     }
@@ -1224,9 +1452,10 @@ async function saveOSS(){
     else{
 
 
-        result=
-
-        await addOSSAPI(data);
+        result =
+        await addOSSAPI(
+            payload
+        );
 
 
     }
@@ -1234,14 +1463,18 @@ async function saveOSS(){
 
 
 
-
-    if(result.success!==false){
-
-
-        closeModal("ossModal");
+    if(result.success){
 
 
-        await refreshAllData();
+        closeModal(
+            "modalOSS"
+        );
+
+
+        await loadOSS();
+
+
+        await loadDashboard();
 
 
     }
@@ -1257,15 +1490,16 @@ async function saveOSS(){
 
 
 
+
 // ========================================
-// OPEN IMS
+// IMS FORM
 // ========================================
+
 
 function openIMSForm(data={}){
 
 
-    EDIT_MODE="IMS";
-
+    EDIT_TYPE="IMS";
 
     EDIT_ID=data.id || null;
 
@@ -1273,65 +1507,50 @@ function openIMSForm(data={}){
 
 
     setValue(
-
-        "ims_wo",
-
-        data.wo || ""
-
+        "wo",
+        data.wo
     );
 
 
     setValue(
-
-        "ims_reference",
-
-        data.reference_code || ""
-
+        "imsReference",
+        data.reference_code
     );
 
 
     setValue(
-
-        "ims_quotation",
-
-        data.quotation || ""
-
+        "quotation",
+        data.quotation
     );
 
 
     setValue(
-
-        "ims_job",
-
-        data.job_name || ""
-
+        "jobName",
+        data.job_name
     );
 
 
     setValue(
-
-        "ims_status",
-
-        data.status || "Progress"
-
+        "status",
+        data.status
     );
 
 
     setValue(
-
-        "ims_bulan",
-
-        data.bulan || ""
-
+        "bulan",
+        data.bulan
     );
 
 
 
-    showModal("imsModal");
+
+    openModal(
+        "modalIMS"
+    );
+
 
 
 }
-
 
 
 
@@ -1343,44 +1562,48 @@ function openIMSForm(data={}){
 // SAVE IMS
 // ========================================
 
-async function saveIMS(){
+
+async function submitIMS(){
 
 
 
-    let data={
-
+    let payload={
 
 
         id:EDIT_ID,
 
 
-        wo:getValue(
-            "ims_wo"
+        wo:
+        getValue("wo"),
+
+
+        reference_code:
+        getValue(
+            "imsReference"
         ),
 
 
-        reference_code:getValue(
-            "ims_reference"
+        quotation:
+        getValue(
+            "quotation"
         ),
 
 
-        quotation:getValue(
-            "ims_quotation"
+        job_name:
+        getValue(
+            "jobName"
         ),
 
 
-        job_name:getValue(
-            "ims_job"
+        status:
+        getValue(
+            "status"
         ),
 
 
-        status:getValue(
-            "ims_status"
-        ),
-
-
-        bulan:getValue(
-            "ims_bulan"
+        bulan:
+        getValue(
+            "bulan"
         )
 
 
@@ -1395,20 +1618,16 @@ async function saveIMS(){
 
 
     if(
-
-        EDIT_MODE==="IMS"
-
+        EDIT_TYPE==="IMS"
         &&
-
         EDIT_ID
-
     ){
 
 
-        result=
-
-        await updateIMSAPI(data);
-
+        result =
+        await updateIMSAPI(
+            payload
+        );
 
 
     }
@@ -1416,27 +1635,10 @@ async function saveIMS(){
     else{
 
 
-        result=
-
-        await addIMSAPI(data);
-
-
-
-    }
-
-
-
-
-
-
-
-    if(result.success!==false){
-
-
-        closeModal("imsModal");
-
-
-        await refreshAllData();
+        result =
+        await addIMSAPI(
+            payload
+        );
 
 
     }
@@ -1444,60 +1646,24 @@ async function saveIMS(){
 
 
 
-}
+
+    if(result.success){
 
 
 
+        closeModal(
+            "modalIMS"
+        );
+
+
+        await loadIMS();
+
+
+        await loadDashboard();
 
 
 
-
-
-// ========================================
-// DELETE
-// ========================================
-
-async function removeOSS(id){
-
-
-
-    if(!confirm("Hapus OSS?"))
-
-    return;
-
-
-
-    await deleteOSSAPI(id);
-
-
-
-    await refreshAllData();
-
-
-
-}
-
-
-
-
-
-
-
-async function removeIMS(id){
-
-
-
-    if(!confirm("Hapus IMS?"))
-
-    return;
-
-
-
-    await deleteIMSAPI(id);
-
-
-
-    await refreshAllData();
+    }
 
 
 
@@ -1512,56 +1678,258 @@ async function removeIMS(id){
 
 
 // ========================================
-// EXPORT MASTER EXCEL
+// DELETE OSS
 // ========================================
 
-function exportMasterExcel(){
+
+async function deleteOSSRow(id){
 
 
 
-    if(typeof XLSX==="undefined")
-
+    if(
+        !confirm(
+            "Hapus data OSS?"
+        )
+    )
     return;
 
 
 
-    let rows = MASTER_CACHE.map(x=>({
+    let result =
+    await deleteOSSAPI(
+        id
+    );
 
 
-        WO:x.wo || "",
+
+    if(result.success){
 
 
-        Reference_Code:x.reference_code || "",
+        await loadOSS();
 
 
-        Customer:x.customer || "",
+        await loadDashboard();
 
 
-        City:x.city || "",
+    }
 
 
-        Bulan:x.bulan || "",
-
-
-        Job_Name:x.job_name || "",
-
-
-        Status:x.status || "",
-
-
-        Note:x.note || ""
-
-
-    }));
+}
 
 
 
 
-    let ws=XLSX.utils.json_to_sheet(rows);
 
 
 
-    let wb=XLSX.utils.book_new();
+
+
+// ========================================
+// DELETE IMS
+// ========================================
+
+
+async function deleteIMSRow(id){
+
+
+
+    if(
+        !confirm(
+            "Hapus data IMS?"
+        )
+    )
+    return;
+
+
+
+
+    let result =
+    await deleteIMSAPI(
+        id
+    );
+
+
+
+    if(result.success){
+
+
+        await loadIMS();
+
+
+        await loadDashboard();
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// SEARCH OSS
+// ========================================
+
+
+function searchOSS(){
+
+
+    let key =
+    getValue(
+        "searchOSS"
+    )
+    .toLowerCase();
+
+
+
+    let data =
+    OSS_CACHE.filter(x=>{
+
+
+        return (
+
+        String(
+            x.reference_code
+        )
+        .toLowerCase()
+        .includes(key)
+
+
+        ||
+
+        String(
+            x.customer
+        )
+        .toLowerCase()
+        .includes(key)
+
+
+        ||
+
+        String(
+            x.city
+        )
+        .toLowerCase()
+        .includes(key)
+
+        );
+
+
+    });
+
+
+
+    renderOSS(
+        data
+    );
+
+
+}
+
+
+
+
+
+
+
+
+// ========================================
+// SEARCH IMS
+// ========================================
+
+
+function searchIMS(){
+
+
+    let key =
+    getValue(
+        "searchIMS"
+    )
+    .toLowerCase();
+
+
+
+    let data =
+    IMS_CACHE.filter(x=>{
+
+
+        return (
+
+        String(x.reference_code)
+        .toLowerCase()
+        .includes(key)
+
+
+        ||
+
+        String(x.wo)
+        .toLowerCase()
+        .includes(key)
+
+
+        ||
+
+        String(x.job_name)
+        .toLowerCase()
+        .includes(key)
+
+        );
+
+
+    });
+
+
+
+    renderIMS(
+        data
+    );
+
+
+}
+
+
+
+
+
+
+
+// ========================================
+// EXPORT CACHE
+// ========================================
+
+
+function exportExcel(data,name){
+
+
+    if(
+        typeof XLSX==="undefined"
+    ){
+
+        alert(
+        "Library Excel belum aktif"
+        );
+
+        return;
+
+    }
+
+
+
+    let ws =
+    XLSX.utils.json_to_sheet(
+        data
+    );
+
+
+    let wb =
+    XLSX.utils.book_new();
 
 
 
@@ -1571,7 +1939,7 @@ function exportMasterExcel(){
 
         ws,
 
-        "MASTER"
+        name
 
     );
 
@@ -1581,156 +1949,36 @@ function exportMasterExcel(){
 
         wb,
 
-        "MASTER.xlsx"
+        name+".xlsx"
 
     );
 
 
-
 }
 
 
 
 
 
+function exportOSS(){
 
-
-
-
-// ========================================
-// IMPORT OSS EXCEL
-// ========================================
-
-function importOSSExcel(file){
-
-
-
-    let reader=new FileReader();
-
-
-
-    reader.onload=e=>{
-
-
-
-        let wb=XLSX.read(
-
-            new Uint8Array(
-
-                e.target.result
-
-            ),
-
-            {
-
-                type:"array"
-
-            }
-
-        );
-
-
-
-
-        let ws=wb.Sheets[
-
-            wb.SheetNames[0]
-
-        ];
-
-
-
-
-        let rows=XLSX.utils.sheet_to_json(ws);
-
-
-
-
-        bulkAddOSSAPI(rows);
-
-
-
-    };
-
-
-
-    reader.readAsArrayBuffer(file);
-
-
+    exportExcel(
+        OSS_CACHE,
+        "OSS"
+    );
 
 }
 
 
 
+function exportIMS(){
 
-
-
-
-
-
-// ========================================
-// IMPORT IMS EXCEL
-// ========================================
-
-function importIMSExcel(file){
-
-
-
-    let reader=new FileReader();
-
-
-
-    reader.onload=e=>{
-
-
-
-        let wb=XLSX.read(
-
-            new Uint8Array(
-
-                e.target.result
-
-            ),
-
-            {
-
-                type:"array"
-
-            }
-
-        );
-
-
-
-
-        let ws=wb.Sheets[
-
-            wb.SheetNames[0]
-
-        ];
-
-
-
-
-        let rows=XLSX.utils.sheet_to_json(ws);
-
-
-
-
-        bulkAddIMSAPI(rows);
-
-
-
-    };
-
-
-
-    reader.readAsArrayBuffer(file);
-
-
+    exportExcel(
+        IMS_CACHE,
+        "IMS"
+    );
 
 }
-
 
 
 
@@ -1739,16 +1987,13 @@ function importIMSExcel(file){
 
 
 console.log(
-
-"API JS V3 PART 3 READY"
-
+"API JS V4 PART 3 READY"
 );
 
 // ========================================
-// OSS IMS MONITORING
-// API JS V3 FINAL CLEAN
+// API JS V4 FINAL CLEAN
 // PART 4
-// FINAL SYSTEM + DASHBOARD + REALTIME
+// DASHBOARD + SYSTEM INIT + REALTIME
 // ========================================
 
 
@@ -1756,11 +2001,32 @@ console.log(
 // SYSTEM STATE
 // ========================================
 
-let SYSTEM_READY = false;
+let SYSTEM_READY=false;
 
-let SYSTEM_TIMER = null;
+let SYSTEM_INTERVAL=null;
 
 
+
+
+
+// ========================================
+// TEXT HELPER
+// ========================================
+
+function setText(id,value){
+
+
+    const el=document.getElementById(id);
+
+
+    if(el){
+
+        el.innerText=value ?? "-";
+
+    }
+
+
+}
 
 
 
@@ -1771,39 +2037,22 @@ let SYSTEM_TIMER = null;
 // TOAST
 // ========================================
 
-function showToast(message,type="success"){
+function showToast(msg,type="success"){
 
 
-
-    const el =
-
-    document.getElementById(
-
-        "toast"
-
-    );
+    const el=document.getElementById("toast");
 
 
-
-    if(!el)
-
-    return;
+    if(!el)return;
 
 
-
-    el.innerHTML = message;
-
+    el.innerHTML=msg;
 
 
-    el.className =
-
-    "toast " + type;
-
+    el.className="toast "+type;
 
 
     el.style.display="block";
-
-
 
 
     setTimeout(()=>{
@@ -1815,7 +2064,6 @@ function showToast(message,type="success"){
     },3000);
 
 
-
 }
 
 
@@ -1824,24 +2072,41 @@ function showToast(message,type="success"){
 
 
 
-
-
 // ========================================
-// LOAD DASHBOARD
+// DASHBOARD LOAD
 // ========================================
 
 async function loadDashboard(){
 
 
-
     try{
 
 
+        const result = await apiRequest(
 
-        const data =
+            "getDashboard",
 
-        await getDashboardAPI();
+            {}
 
+        );
+
+
+
+        if(!result.success){
+
+            throw new Error(
+                result.message
+            );
+
+        }
+
+
+
+        const data = normalizeAPI(
+
+            result.data
+
+        );
 
 
 
@@ -1917,37 +2182,9 @@ async function loadDashboard(){
 
         setText(
 
-            "belum",
-
-            data.belumIMS || 0
-
-        );
-
-
-
-
-        setText(
-
-            "lastUpdate",
-
-            new Date()
-
-            .toLocaleString(
-
-                "id-ID"
-
-            )
-
-        );
-
-
-
-
-        setText(
-
             "apiStatus",
 
-            "🟢 Online"
+            "🟢 ONLINE"
 
         );
 
@@ -1972,41 +2209,12 @@ async function loadDashboard(){
 
             "apiStatus",
 
-            "🔴 Offline"
+            "🔴 OFFLINE"
 
         );
 
 
     }
-
-
-
-}
-
-
-
-
-
-
-
-
-// ========================================
-// TEXT HELPER
-// ========================================
-
-function setText(id,value){
-
-
-
-    const el =
-
-    document.getElementById(id);
-
-
-
-    if(el)
-
-    el.innerText=value;
 
 
 
@@ -2027,22 +2235,51 @@ async function loadMaster(){
 
 
 
-    const data =
-
-    await getMasterAPI();
+    try{
 
 
-
-    MASTER_CACHE=data || [];
+        const data = await getMasterAPI();
 
 
 
-    renderMaster(
+        MASTER_CACHE =
 
-        MASTER_CACHE
+        Array.isArray(data)
 
-    );
+        ?
 
+        data
+
+        :
+
+        extractArray(data);
+
+
+
+        renderMaster(
+
+            MASTER_CACHE
+
+        );
+
+
+
+    }
+
+
+    catch(e){
+
+
+        console.error(
+
+            "MASTER ERROR",
+
+            e
+
+        );
+
+
+    }
 
 
 }
@@ -2053,18 +2290,15 @@ async function loadMaster(){
 
 
 
-
 // ========================================
-// MASTER TABLE
+// MASTER RENDER
 // ========================================
 
 function renderMaster(data){
 
 
 
-    const tbody =
-
-    document.getElementById(
+    const tbody=document.getElementById(
 
         "masterData"
 
@@ -2072,9 +2306,33 @@ function renderMaster(data){
 
 
 
-    if(!tbody)
+    if(!tbody)return;
 
-    return;
+
+
+    if(!Array.isArray(data) || data.length===0){
+
+
+        tbody.innerHTML=`
+
+        <tr>
+
+        <td colspan="8">
+
+        Belum ada data
+
+        </td>
+
+        </tr>
+
+        `;
+
+
+        return;
+
+
+    }
+
 
 
 
@@ -2083,39 +2341,37 @@ function renderMaster(data){
 
 
 
-
     data.forEach(item=>{
 
 
-
         html += `
+
 
         <tr>
 
         <td>${item.wo || "-"}</td>
 
-        <td>${item.reference_code || ""}</td>
+        <td>${item.reference_code || "-"}</td>
 
-        <td>${item.customer || ""}</td>
+        <td>${item.customer || "-"}</td>
 
-        <td>${item.city || ""}</td>
+        <td>${item.city || "-"}</td>
 
         <td>${item.bulan || "-"}</td>
 
         <td>${item.job_name || "-"}</td>
 
-        <td>${item.status || ""}</td>
+        <td>${item.status || "-"}</td>
 
         <td>${item.note || "-"}</td>
 
         </tr>
 
+
         `;
 
 
-
     });
-
 
 
 
@@ -2132,27 +2388,54 @@ function renderMaster(data){
 
 
 
+
 // ========================================
-// REFRESH ALL
+// REFRESH SYSTEM
 // ========================================
 
 async function refreshSystem(){
 
 
-
-    await refreshAllData();
-
-
-    await loadDashboard();
+    try{
 
 
-    await loadMaster();
+        await refreshAllData();
+
+
+        await loadDashboard();
+
+
+        await loadMaster();
+
+
+
+        console.log(
+
+        "SYSTEM REFRESH OK"
+
+        );
+
+
+    }
+
+
+    catch(e){
+
+
+        console.error(
+
+        "REFRESH ERROR",
+
+        e
+
+        );
+
+
+    }
 
 
 
 }
-
-
 
 
 
@@ -2172,10 +2455,7 @@ function startRealtime(){
 
 
 
-    SYSTEM_TIMER =
-
-    setInterval(()=>{
-
+    SYSTEM_INTERVAL=setInterval(()=>{
 
 
         refreshSystem();
@@ -2193,94 +2473,29 @@ function startRealtime(){
 
 
 
+
 function stopRealtime(){
 
 
 
-    if(SYSTEM_TIMER){
-
+    if(SYSTEM_INTERVAL){
 
 
         clearInterval(
 
-            SYSTEM_TIMER
+            SYSTEM_INTERVAL
 
         );
 
 
-
-        SYSTEM_TIMER=null;
-
+        SYSTEM_INTERVAL=null;
 
 
     }
-
 
 
 }
 
-
-
-
-
-
-
-
-// ========================================
-// INIT SYSTEM
-// ========================================
-
-async function initSystem(){
-
-
-
-    try{
-
-
-
-        await refreshSystem();
-
-
-
-        SYSTEM_READY=true;
-
-
-
-        startRealtime();
-
-
-
-        console.log(
-
-        "SYSTEM READY"
-
-        );
-
-
-
-    }
-
-
-
-    catch(e){
-
-
-
-        console.error(
-
-            "SYSTEM INIT ERROR",
-
-            e
-
-        );
-
-
-
-    }
-
-
-
-}
 
 
 
@@ -2297,62 +2512,54 @@ function searchMaster(keyword){
 
 
 
-    keyword =
+    keyword=
 
-    keyword
+    String(keyword)
 
     .toLowerCase();
 
 
 
-
-    const result =
-
-    MASTER_CACHE.filter(x=>{
+    let result=MASTER_CACHE.filter(item=>{
 
 
         return (
 
+        String(item.reference_code)
 
+        .toLowerCase()
 
-            String(x.reference_code)
-
-            .toLowerCase()
-
-            .includes(keyword)
-
-
-
-            ||
+        .includes(keyword)
 
 
 
-            String(x.customer)
-
-            .toLowerCase()
-
-            .includes(keyword)
+        ||
 
 
 
-            ||
+        String(item.customer)
+
+        .toLowerCase()
+
+        .includes(keyword)
 
 
 
-            String(x.city)
+        ||
 
-            .toLowerCase()
 
-            .includes(keyword)
 
+        String(item.city)
+
+        .toLowerCase()
+
+        .includes(keyword)
 
 
         );
 
 
-
     });
-
 
 
 
@@ -2397,20 +2604,68 @@ function clearCache(){
 
 
 // ========================================
-// INIT
+// INIT SYSTEM
 // ========================================
 
-document.addEventListener(
-
-"DOMContentLoaded",
-
-()=>{
+async function initSystem(){
 
 
-    initSystem();
+
+    try{
 
 
-});
+        console.log(
+
+        "START SYSTEM"
+
+        );
+
+
+
+        await testConnection();
+
+
+
+        await refreshSystem();
+
+
+
+        startRealtime();
+
+
+
+        SYSTEM_READY=true;
+
+
+
+        console.log(
+
+        "SYSTEM READY"
+
+        );
+
+
+
+    }
+
+
+    catch(e){
+
+
+        console.error(
+
+        "SYSTEM INIT ERROR",
+
+        e
+
+        );
+
+
+    }
+
+
+
+}
 
 
 
@@ -2441,8 +2696,29 @@ window.addEventListener(
 
 
 
+
+// ========================================
+// START
+// ========================================
+
+document.addEventListener(
+
+"DOMContentLoaded",
+
+()=>{
+
+
+    initSystem();
+
+
+});
+
+
+
+
+
 console.log(
 
-"API JS V3 FINAL COMPLETE"
+"API JS V4 FINAL COMPLETE"
 
 );
