@@ -1989,63 +1989,57 @@ function importIMSExcel(file){
 
 
 
-        let rows =
-        XLSX.utils.sheet_to_json(
-            sheet
-        );
+        let raw =
+XLSX.utils.sheet_to_json(
+    sheet,
+    {
+        defval:""
+    }
+);
 
 
 
+let rows = raw.map(item=>({
+
+    wo:
+    item.wo ||
+    item.WO ||
+    item.WO_Number ||
+    "",
 
 
+    reference_code:
+    item.reference_code ||
+    item.Reference_Code ||
+    item["Reference Code"] ||
+    "",
 
 
-        bulkIMSAPI(rows)
-
-        .then(result=>{
-
-
-            if(result.success){
+    quotation:
+    item.quotation ||
+    item.Quotation ||
+    "",
 
 
-
-                alert(
-                    "Import IMS berhasil"
-                );
-
-
-
-                refreshIMSData();
+    job_name:
+    item.job_name ||
+    item.Job_Name ||
+    item["Job Name"] ||
+    "",
 
 
-
-            }
-
-
-
-        });
+    status:
+    item.status ||
+    item.Status ||
+    "",
 
 
+    bulan:
+    item.bulan ||
+    item.Bulan ||
+    ""
 
-
-
-    };
-
-
-
-
-
-
-    reader.readAsArrayBuffer(file);
-
-
-
-}
-
-
-
-
-
+}));
 
 
 
