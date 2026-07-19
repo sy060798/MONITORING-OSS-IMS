@@ -1,8 +1,8 @@
 // ========================================
 // OSS IMS MONITORING
-// API JS V5 FINAL
+// API JS V5 FINAL FIX
 // TAHAP 1 / 4
-// CORE SYSTEM
+// CORE + API REQUEST + OSS MODULE
 // ========================================
 
 
@@ -21,7 +21,7 @@ const PAGE_LIMIT = 100;
 
 
 // ========================================
-// CACHE
+// GLOBAL CACHE
 // ========================================
 
 let OSS_CACHE=[];
@@ -31,7 +31,6 @@ let IMS_CACHE=[];
 let DONE_CACHE=[];
 
 let MASTER_CACHE=[];
-
 
 
 
@@ -61,19 +60,25 @@ async function apiRequest(action,data={}){
 
                 headers:{
 
+
                     "Content-Type":
                     "text/plain;charset=utf-8"
+
 
                 },
 
 
                 body:JSON.stringify({
 
+
                     action:action,
+
 
                     data:data
 
+
                 })
+
 
             }
 
@@ -81,13 +86,28 @@ async function apiRequest(action,data={}){
 
 
 
+        const json =
+        await response.json();
 
-        return await response.json();
+
+
+        console.log(
+
+            "API RESPONSE",
+
+            action,
+
+            json
+
+        );
+
+
+
+        return json;
 
 
 
     }
-
 
     catch(error){
 
@@ -121,9 +141,7 @@ async function apiRequest(action,data={}){
     }
 
 
-
 }
-
 
 
 
@@ -154,6 +172,8 @@ async function safeRequest(action,data={}){
 
         console.error(
 
+            "API FAILED",
+
             result.message
 
         );
@@ -174,12 +194,12 @@ async function safeRequest(action,data={}){
 
 
 
-
 // ========================================
 // PAGE REQUEST
 // ========================================
 
 async function pageRequest(action,page=1){
+
 
 
     return await safeRequest(
@@ -188,11 +208,15 @@ async function pageRequest(action,page=1){
 
         {
 
+
             page:page,
+
 
             limit:PAGE_LIMIT
 
+
         }
+
 
     );
 
@@ -207,7 +231,7 @@ async function pageRequest(action,page=1){
 
 
 // ========================================
-// GET ALL DATA
+// GET ALL PAGE DATA
 // ========================================
 
 async function getAllData(action){
@@ -237,13 +261,12 @@ async function getAllData(action){
 
 
 
+
         if(
 
             !result.success ||
 
-            !Array.isArray(result.data)
-
-            ||
+            !Array.isArray(result.data) ||
 
             result.data.length===0
 
@@ -254,7 +277,6 @@ async function getAllData(action){
 
 
         }
-
 
 
 
@@ -306,12 +328,12 @@ async function getAllData(action){
 
 
 
+
 // ========================================
-// TEST API
+// TEST CONNECTION
 // ========================================
 
 async function testConnection(){
-
 
 
     return await safeRequest(
@@ -333,48 +355,215 @@ async function testConnection(){
 
 
 // ========================================
-// REFRESH CACHE DASAR
+// OSS MODULE
 // ========================================
 
-async function refreshCache(){
+
+
+// ========================================
+// GET OSS PAGE
+// ========================================
+
+async function getOSS(page=1){
 
 
 
-    OSS_CACHE =
-    await getAllData(
+    const result =
 
-        "getOSS"
+    await pageRequest(
 
-    );
+        "getOSS",
 
-
-
-
-    IMS_CACHE =
-    await getAllData(
-
-        "getIMS"
-
-    );
-
-
-
-
-    DONE_CACHE =
-    await getAllData(
-
-        "getDONE"
+        page
 
     );
 
 
 
 
-    return true;
+
+    if(result.success){
+
+
+
+        OSS_CACHE =
+
+        Array.isArray(result.data)
+
+        ?
+
+        result.data
+
+        :
+
+        [];
+
+
+
+    }
+
+
+
+    return OSS_CACHE;
 
 
 
 }
+
+
+
+
+
+
+
+
+
+// ========================================
+// GET ALL OSS
+// ========================================
+
+async function getAllOSS(){
+
+
+
+    let page=1;
+
+
+    let all=[];
+
+
+
+
+
+    while(true){
+
+
+
+        const result =
+
+        await pageRequest(
+
+            "getOSS",
+
+            page
+
+        );
+
+
+
+
+
+
+        if(
+
+
+            !result.success ||
+
+
+            !Array.isArray(result.data)
+
+
+            ||
+
+
+            result.data.length===0
+
+
+        ){
+
+
+            break;
+
+
+        }
+
+
+
+
+
+        all.push(
+
+            ...result.data
+
+        );
+
+
+
+
+
+        if(
+
+            result.data.length < PAGE_LIMIT
+
+        ){
+
+
+            break;
+
+
+        }
+
+
+
+        page++;
+
+
+
+    }
+
+
+
+
+
+    OSS_CACHE = all;
+
+
+
+    return OSS_CACHE;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// FIND OSS
+// ========================================
+
+function findOSS(reference){
+
+
+
+    return OSS_CACHE.find(item=>{
+
+
+
+        return String(
+
+            item.reference_code || ""
+
+        )
+
+        ===
+
+        String(reference);
+
+
+
+    });
+
+
+
+}
+
+
 
 
 
@@ -383,47 +572,74 @@ async function refreshCache(){
 
 
 console.log(
+
 "API JS V5 TAHAP 1 READY"
+
 );
 
-// ========================================
+ // ========================================
 // OSS IMS MONITORING
-// API JS V5 UPDATE
+// API JS V5 FINAL FIX
 // TAHAP 2 / 4
 // IMS + DONE + MASTER SYNC
 // ========================================
 
 
+
+
 // ========================================
-// GET IMS
+// IMS MODULE
 // ========================================
+
+
+// GET IMS PAGE
 
 async function getIMS(page=1){
 
 
-    const result = await pageRequest(
+
+    const result =
+
+    await pageRequest(
+
         "getIMS",
+
         page
+
     );
+
+
 
 
     if(result.success){
 
 
-        IMS_CACHE = Array.isArray(result.data)
+
+        IMS_CACHE =
+
+        Array.isArray(result.data)
+
         ?
+
         result.data
+
         :
+
         [];
+
 
 
     }
 
 
+
+
     return IMS_CACHE;
 
 
+
 }
+
 
 
 
@@ -438,62 +654,101 @@ async function getIMS(page=1){
 async function getAllIMS(){
 
 
+
     let page=1;
 
+
     let all=[];
+
 
 
 
     while(true){
 
 
+
         const result =
+
         await pageRequest(
+
             "getIMS",
+
             page
+
         );
 
 
 
+
+
         if(
+
+
             !result.success ||
-            !Array.isArray(result.data) ||
+
+
+            !Array.isArray(result.data)
+
+
+            ||
+
+
             result.data.length===0
+
+
         ){
+
 
             break;
 
+
         }
+
+
 
 
 
         all.push(
+
             ...result.data
+
         );
 
 
 
+
+
         if(
+
             result.data.length < PAGE_LIMIT
+
         ){
+
 
             break;
 
+
         }
+
 
 
 
         page++;
 
 
+
     }
 
 
 
-    IMS_CACHE=all;
 
 
-    return all;
+    IMS_CACHE = all;
+
+
+
+    return IMS_CACHE;
+
 
 
 }
@@ -506,24 +761,92 @@ async function getAllIMS(){
 
 
 // ========================================
-// GET DONE
+// FIND IMS
 // ========================================
+
+function findIMS(reference){
+
+
+
+    return IMS_CACHE.find(item=>{
+
+
+
+        return (
+
+
+
+            String(
+
+                item.reference_code || ""
+
+            )
+
+            ===
+
+            String(reference)
+
+
+
+            &&
+
+
+
+            item.flag !== "DELETE"
+
+
+
+        );
+
+
+
+    });
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+// ========================================
+// DONE MODULE
+// ========================================
+
+
+// GET DONE
 
 async function getDONEAPI(){
 
 
 
     const result =
+
     await safeRequest(
 
         "getDONE",
 
         {
+
+
             page:1,
+
+
             limit:PAGE_LIMIT
+
+
         }
 
+
     );
+
 
 
 
@@ -531,19 +854,32 @@ async function getDONEAPI(){
     if(result.success){
 
 
+
         DONE_CACHE =
+
+
         Array.isArray(result.data)
+
         ?
+
+
         result.data
+
         :
+
+
         [];
+
 
 
     }
 
 
 
+
+
     return DONE_CACHE;
+
 
 
 }
@@ -557,7 +893,122 @@ async function getDONEAPI(){
 
 
 // ========================================
-// SYNC DONE APPSHEET
+// GET ALL DONE
+// ========================================
+
+async function getAllDONE(){
+
+
+
+    let page=1;
+
+
+    let all=[];
+
+
+
+
+    while(true){
+
+
+
+        const result =
+
+        await pageRequest(
+
+            "getDONE",
+
+            page
+
+        );
+
+
+
+
+
+
+        if(
+
+
+            !result.success ||
+
+
+            !Array.isArray(result.data)
+
+
+            ||
+
+
+            result.data.length===0
+
+
+        ){
+
+
+            break;
+
+
+        }
+
+
+
+
+
+        all.push(
+
+            ...result.data
+
+        );
+
+
+
+
+
+        if(
+
+            result.data.length < PAGE_LIMIT
+
+        ){
+
+
+            break;
+
+
+        }
+
+
+
+
+        page++;
+
+
+
+    }
+
+
+
+
+
+    DONE_CACHE = all;
+
+
+
+    return DONE_CACHE;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// SYNC DONE
 // ========================================
 
 async function syncDONEAPI(){
@@ -565,6 +1016,7 @@ async function syncDONEAPI(){
 
 
     const result =
+
     await safeRequest(
 
         "syncDONE",
@@ -575,52 +1027,20 @@ async function syncDONEAPI(){
 
 
 
+
+
     await getDONEAPI();
+
+
 
     await getIMS(1);
 
 
 
+
+
     return result;
 
-
-}
-
-
-
-
-
-
-
-
-
-// ========================================
-// FIND IMS ACTIVE
-// ========================================
-
-function findIMS(reference){
-
-
-
-    return IMS_CACHE.find(item=>{
-
-
-        return (
-
-            String(
-                item.reference_code
-            )
-            ===
-            String(reference)
-
-            &&
-
-            item.FLAG !== "DELETE"
-
-        );
-
-
-    });
 
 
 }
@@ -644,10 +1064,15 @@ function isAlreadyDone(reference){
     return DONE_CACHE.some(item=>{
 
 
+
         return String(
-            item.reference_code
+
+            item.reference_code || ""
+
         )
+
         ===
+
         String(reference);
 
 
@@ -667,7 +1092,8 @@ function isAlreadyDone(reference){
 
 
 // ========================================
-// MASTER CLEAN FILTER
+// CLEAN MASTER DATA
+// HAPUS DATA YANG SUDAH DONE
 // ========================================
 
 function cleanMasterData(data){
@@ -675,7 +1101,11 @@ function cleanMasterData(data){
 
 
     if(!Array.isArray(data))
+
     return [];
+
+
+
 
 
 
@@ -683,20 +1113,11 @@ function cleanMasterData(data){
 
 
 
-        // sudah pindah DONE
-        if(
-            isAlreadyDone(
-                item.reference_code
-            )
-        ){
+        return !isAlreadyDone(
 
-            return false;
+            item.reference_code
 
-        }
-
-
-
-        return true;
+        );
 
 
 
@@ -714,32 +1135,43 @@ function cleanMasterData(data){
 
 
 
+
+
 // ========================================
-// GET MASTER UPDATE
+// GET MASTER API
 // ========================================
 
 async function getMasterAPI(){
 
 
 
-    // refresh data terbaru
-
     await getIMS(1);
+
+
 
     await getDONEAPI();
 
 
 
 
+
     const result =
+
     await safeRequest(
 
         "getMaster",
 
         {
+
+
             page:1,
+
+
             limit:PAGE_LIMIT
+
+
         }
+
 
     );
 
@@ -762,13 +1194,18 @@ async function getMasterAPI(){
 
 
     }
+
     else{
+
 
 
         MASTER_CACHE=[];
 
 
+
     }
+
+
 
 
 
@@ -787,7 +1224,7 @@ async function getMasterAPI(){
 
 
 // ========================================
-// REFRESH DATA
+// REFRESH MASTER SYNC
 // ========================================
 
 async function refreshMasterSync(){
@@ -797,10 +1234,13 @@ async function refreshMasterSync(){
     await syncDONEAPI();
 
 
+
     await getMasterAPI();
 
 
+
     return MASTER_CACHE;
+
 
 
 }
@@ -814,15 +1254,19 @@ async function refreshMasterSync(){
 
 
 console.log(
+
 "API JS V5 TAHAP 2 READY"
+
 );
 
- // ========================================
-// OSS IMS MONITORING
-// API JS V5 UPDATE
-// TAHAP 3 / 4
-// MASTER RENDER + DASHBOARD
 // ========================================
+// OSS IMS MONITORING
+// API JS V5 FINAL FIX
+// TAHAP 3 / 4
+// MASTER + DASHBOARD + CACHE CONTROL
+// ========================================
+
+
 
 
 // ========================================
@@ -836,36 +1280,62 @@ async function loadMaster(){
 
 
         const data =
+
         await getMasterAPI();
 
 
 
+
         MASTER_CACHE =
+
         Array.isArray(data)
+
         ?
+
         data
+
         :
+
         [];
 
 
 
-        renderMaster(
-            MASTER_CACHE
-        );
+
+
+        if(typeof renderMaster==="function"){
+
+
+            renderMaster(
+
+                MASTER_CACHE
+
+            );
+
+
+        }
+
+
 
 
 
     }
-    catch(e){
+
+    catch(error){
+
 
 
         console.error(
-            "MASTER LOAD ERROR",
-            e
+
+            "LOAD MASTER ERROR",
+
+            error
+
         );
 
 
+
         MASTER_CACHE=[];
+
 
 
     }
@@ -883,108 +1353,168 @@ async function loadMaster(){
 
 
 // ========================================
-// RENDER MASTER
+// DASHBOARD
 // ========================================
 
-function renderMaster(data){
+async function getDashboardAPI(){
 
 
 
-    const tbody =
-    document.getElementById(
-        "masterData"
-    );
+    await getAllOSS();
 
 
 
-    if(!tbody)
-    return;
+    await getAllIMS();
 
 
 
-    if(
-        !Array.isArray(data)
-        ||
-        data.length===0
-    ){
-
-
-        tbody.innerHTML=`
-
-        <tr>
-            <td colspan="8">
-                Tidak ada data aktif
-            </td>
-        </tr>
-
-        `;
-
-
-        return;
-
-
-    }
+    await getAllDONE();
 
 
 
 
 
-
-    let html="";
-
+    let result={
 
 
 
-    data.forEach(item=>{
+        totalOSS:
+
+        OSS_CACHE.length,
 
 
-        html += `
 
-        <tr>
+        totalIMS:
 
-            <td>
-            ${item.wo || "-"}
-            </td>
+        IMS_CACHE.length,
 
 
-            <td>
-            ${item.reference_code || "-"}
-            </td>
+
+        totalDONE:
+
+        DONE_CACHE.length,
 
 
-            <td>
-            ${item.customer || "-"}
-            </td>
+
+        belumIMS:0,
 
 
-            <td>
-            ${item.city || "-"}
-            </td>
+
+        progress:0,
 
 
-            <td>
-            ${item.bulan || "-"}
-            </td>
+
+        revisi:0,
 
 
-            <td>
-            ${item.job_name || "-"}
-            </td>
+
+        selesai:0
 
 
-            <td>
-            ${item.status || "-"}
-            </td>
+
+    };
 
 
-            <td>
-            ${item.note || ""}
-            </td>
 
 
-        </tr>
 
-        `;
+
+    MASTER_CACHE.forEach(item=>{
+
+
+
+        let status =
+
+        String(
+
+            item.status || ""
+
+        );
+
+
+
+
+
+
+        if(
+
+            status.includes(
+
+                "Belum"
+
+            )
+
+        ){
+
+
+
+            result.belumIMS++;
+
+
+
+        }
+
+
+
+        else if(
+
+            status.includes(
+
+                "Progress"
+
+            )
+
+        ){
+
+
+
+            result.progress++;
+
+
+
+        }
+
+
+
+        else if(
+
+            status.includes(
+
+                "Revisi"
+
+            )
+
+        ){
+
+
+
+            result.revisi++;
+
+
+
+        }
+
+
+
+        else if(
+
+            status.includes(
+
+                "Sudah"
+
+            )
+
+        ){
+
+
+
+            result.selesai++;
+
+
+
+        }
+
+
 
 
     });
@@ -992,7 +1522,10 @@ function renderMaster(data){
 
 
 
-    tbody.innerHTML=html;
+
+
+
+    return result;
 
 
 
@@ -1006,8 +1539,10 @@ function renderMaster(data){
 
 
 
+
+
 // ========================================
-// DASHBOARD LOAD
+// LOAD DASHBOARD UI
 // ========================================
 
 async function loadDashboard(){
@@ -1018,201 +1553,95 @@ async function loadDashboard(){
 
 
 
-        await refreshMasterSync();
+        const data =
 
+        await getDashboardAPI();
 
 
 
-        let master =
-        MASTER_CACHE;
 
 
+        if(typeof setText==="function"){
 
 
-        let result={
 
+            setText(
 
-            totalOSS:0,
+                "totalOSS",
 
-            totalIMS:0,
+                data.totalOSS
 
-            totalDONE:0,
+            );
 
-            belumIMS:0,
 
-            progress:0,
 
-            revisi:0,
+            setText(
 
-            selesai:0
+                "totalIMS",
 
+                data.totalIMS
 
-        };
+            );
 
 
 
+            setText(
 
+                "done",
 
+                data.totalDONE
 
-        const oss =
-        await getAllOSS();
+            );
 
 
 
+            setText(
 
-        const ims =
-        await getAllIMS();
+                "totalBelum",
 
+                data.belumIMS
 
+            );
 
 
-        const done =
-        await getDONEAPI();
 
+            setText(
 
+                "progress",
 
+                data.progress
 
+            );
 
 
-        result.totalOSS =
-        oss.length;
 
+            setText(
 
+                "revisi",
 
+                data.revisi
 
-        result.totalIMS =
-        ims.length;
+            );
 
 
 
+            setText(
 
-        result.totalDONE =
-        done.length;
+                "apiStatus",
 
+                "🟢 ONLINE"
 
+            );
 
 
 
+        }
 
 
-        master.forEach(item=>{
 
 
 
-            if(
-                item.status
-                &&
-                item.status.includes(
-                    "Belum"
-                )
-            ){
-
-
-                result.belumIMS++;
-
-
-            }
-
-
-
-            else if(
-                item.status
-                &&
-                item.status.includes(
-                    "Progress"
-                )
-            ){
-
-
-                result.progress++;
-
-
-            }
-
-
-
-            else if(
-                item.status
-                &&
-                item.status.includes(
-                    "Revisi"
-                )
-            ){
-
-
-                result.revisi++;
-
-
-            }
-
-
-
-            else if(
-                item.status
-                &&
-                item.status.includes(
-                    "Sudah"
-                )
-            ){
-
-
-                result.selesai++;
-
-
-            }
-
-
-
-        });
-
-
-
-
-
-
-
-
-        setText(
-            "totalOSS",
-            result.totalOSS
-        );
-
-
-        setText(
-            "totalIMS",
-            result.totalIMS
-        );
-
-
-        setText(
-            "done",
-            result.totalDONE
-        );
-
-
-        setText(
-            "totalBelum",
-            result.belumIMS
-        );
-
-
-        setText(
-            "progress",
-            result.progress
-        );
-
-
-        setText(
-            "revisi",
-            result.revisi
-        );
-
-
-
-        setText(
-            "apiStatus",
-            "🟢 ONLINE"
-        );
+        return data;
 
 
 
@@ -1221,21 +1650,22 @@ async function loadDashboard(){
     catch(e){
 
 
+
         console.error(
+
             "DASHBOARD ERROR",
+
             e
+
         );
 
 
 
-        setText(
-            "apiStatus",
-            "🔴 ERROR"
-        );
+        return {};
+
 
 
     }
-
 
 
 
@@ -1249,8 +1679,10 @@ async function loadDashboard(){
 
 
 
+
+
 // ========================================
-// REFRESH SEMUA
+// REFRESH SEMUA DATA
 // ========================================
 
 async function refreshAllData(){
@@ -1260,7 +1692,9 @@ async function refreshAllData(){
     await getAllOSS();
 
 
+
     await refreshMasterSync();
+
 
 
     await loadDashboard();
@@ -1286,35 +1720,175 @@ async function refreshAllData(){
 
 
 // ========================================
-// AUTO REFRESH
+// CLEAR CACHE
 // ========================================
 
-function startRealtime(){
+function clearCache(){
 
 
 
-    if(
-        SYSTEM_INTERVAL
-    ){
+    OSS_CACHE=[];
 
-        clearInterval(
-            SYSTEM_INTERVAL
+
+    IMS_CACHE=[];
+
+
+    DONE_CACHE=[];
+
+
+    MASTER_CACHE=[];
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ========================================
+// EXPORT DATA EXCEL
+// ========================================
+
+function exportExcel(data,name){
+
+
+
+    if(typeof XLSX==="undefined"){
+
+
+
+        alert(
+
+            "Library Excel belum aktif"
+
         );
+
+
+        return;
+
+
 
     }
 
 
 
 
-    SYSTEM_INTERVAL =
-    setInterval(()=>{
 
 
-        refreshAllData();
+    let ws =
+
+    XLSX.utils.json_to_sheet(
+
+        data
+
+    );
 
 
 
-    },60000);
+
+
+    let wb =
+
+    XLSX.utils.book_new();
+
+
+
+
+
+    XLSX.utils.book_append_sheet(
+
+        wb,
+
+        ws,
+
+        name
+
+    );
+
+
+
+
+
+    XLSX.writeFile(
+
+        wb,
+
+        name+".xlsx"
+
+    );
+
+
+
+}
+
+
+
+
+
+
+
+
+
+function exportOSS(){
+
+
+
+    exportExcel(
+
+        OSS_CACHE,
+
+        "OSS"
+
+    );
+
+
+
+}
+
+
+
+
+
+
+
+function exportIMS(){
+
+
+
+    exportExcel(
+
+        IMS_CACHE,
+
+        "IMS"
+
+    );
+
+
+
+}
+
+
+
+
+
+
+
+function exportDONE(){
+
+
+
+    exportExcel(
+
+        DONE_CACHE,
+
+        "DONE"
+
+    );
 
 
 
@@ -1329,15 +1903,19 @@ function startRealtime(){
 
 
 console.log(
+
 "API JS V5 TAHAP 3 READY"
+
 );
 
- // ========================================
-// OSS IMS MONITORING
-// API JS V5 UPDATE
-// TAHAP 4 / 4 FINAL
-// SYSTEM CONTROL + INIT
 // ========================================
+// OSS IMS MONITORING
+// API JS V5 FINAL FIX
+// TAHAP 4 / 4
+// SYSTEM CONTROL + INIT + REALTIME
+// ========================================
+
+
 
 
 // ========================================
@@ -1365,14 +1943,19 @@ function showToast(msg,type="success"){
 
 
     const el =
+
     document.getElementById(
+
         "toast"
+
     );
 
 
 
     if(!el)
+
     return;
+
 
 
 
@@ -1381,11 +1964,13 @@ function showToast(msg,type="success"){
 
 
     el.className =
-    "toast "+type;
+
+    "toast " + type;
 
 
 
     el.style.display="block";
+
 
 
 
@@ -1411,7 +1996,7 @@ function showToast(msg,type="success"){
 
 
 // ========================================
-// MANUAL SYNC DONE BUTTON
+// MANUAL SYNC DONE
 // ========================================
 
 async function manualSyncDONE(){
@@ -1423,13 +2008,17 @@ async function manualSyncDONE(){
 
 
         showToast(
+
             "Sync DONE berjalan..."
+
         );
 
 
 
 
+
         const result =
+
         await syncDONEAPI();
 
 
@@ -1441,30 +2030,34 @@ async function manualSyncDONE(){
 
 
 
-            await refreshMasterSync();
+            await refreshAllData();
 
-
-            await loadMaster();
-
-
-            await loadDashboard();
 
 
 
 
             showToast(
-                result.message
+
+                result.message ||
+
+                "DONE berhasil sync"
+
             );
 
 
 
         }
+
         else{
 
 
+
             showToast(
+
                 result.message,
+
                 "error"
+
             );
 
 
@@ -1472,27 +2065,34 @@ async function manualSyncDONE(){
 
 
 
-
     }
+
     catch(e){
 
 
+
         console.error(
+
             e
+
         );
+
 
 
         showToast(
+
             e.message,
+
             "error"
+
         );
+
 
 
     }
 
 
 
-
 }
 
 
@@ -1503,41 +2103,10 @@ async function manualSyncDONE(){
 
 
 
-// ========================================
-// TEST API
-// ========================================
-
-async function testConnection(){
-
-
-
-    const result =
-    await safeRequest(
-
-        "test",
-
-        {}
-
-    );
-
-
-
-    return result;
-
-
-
-}
-
-
-
-
-
-
-
 
 
 // ========================================
-// SYSTEM REFRESH
+// REFRESH SYSTEM
 // ========================================
 
 async function refreshSystem(){
@@ -1561,26 +2130,32 @@ async function refreshSystem(){
 
 
 
+
         console.log(
+
             "SYSTEM UPDATE OK"
+
         );
 
 
 
     }
+
     catch(e){
 
 
 
         console.error(
-            "SYSTEM ERROR",
+
+            "SYSTEM REFRESH ERROR",
+
             e
+
         );
 
 
 
     }
-
 
 
 
@@ -1594,8 +2169,10 @@ async function refreshSystem(){
 
 
 
+
+
 // ========================================
-// START AUTO REFRESH
+// START REALTIME
 // ========================================
 
 function startRealtime(){
@@ -1608,7 +2185,9 @@ function startRealtime(){
 
 
     SYSTEM_INTERVAL =
+
     setInterval(()=>{
+
 
 
         refreshSystem();
@@ -1630,24 +2209,27 @@ function startRealtime(){
 
 
 // ========================================
-// STOP REFRESH
+// STOP REALTIME
 // ========================================
 
 function stopRealtime(){
 
 
 
-    if(
-        SYSTEM_INTERVAL
-    ){
+    if(SYSTEM_INTERVAL){
+
 
 
         clearInterval(
+
             SYSTEM_INTERVAL
+
         );
 
 
+
         SYSTEM_INTERVAL=null;
+
 
 
     }
@@ -1655,6 +2237,39 @@ function stopRealtime(){
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+// ========================================
+// TEST CONNECTION
+// ========================================
+
+async function checkAPI(){
+
+
+
+    const result =
+
+    await testConnection();
+
+
+
+
+    return result;
+
+
+
+}
+
+
 
 
 
@@ -1677,14 +2292,19 @@ async function initSystem(){
 
 
         console.log(
+
             "START OSS IMS SYSTEM"
+
         );
 
 
 
 
+
         const api =
+
         await testConnection();
+
 
 
 
@@ -1692,9 +2312,13 @@ async function initSystem(){
         if(!api.success){
 
 
+
             throw new Error(
-                "API tidak aktif"
+
+                "API OFFLINE"
+
             );
+
 
 
         }
@@ -1703,7 +2327,8 @@ async function initSystem(){
 
 
 
-        await refreshSystem();
+        await refreshAllData();
+
 
 
 
@@ -1713,42 +2338,74 @@ async function initSystem(){
 
 
 
+
         SYSTEM_READY=true;
 
 
 
 
-        setText(
-            "apiStatus",
-            "🟢 ONLINE"
-        );
+
+
+        if(typeof setText==="function"){
+
+
+
+            setText(
+
+                "apiStatus",
+
+                "🟢 ONLINE"
+
+            );
+
+
+
+        }
+
 
 
 
 
 
         console.log(
+
             "SYSTEM READY"
+
         );
 
 
 
     }
-    catch(e){
+
+    catch(error){
 
 
 
         console.error(
+
             "INIT ERROR",
-            e
+
+            error
+
         );
 
 
 
-        setText(
-            "apiStatus",
-            "🔴 OFFLINE"
-        );
+        if(typeof setText==="function"){
+
+
+
+            setText(
+
+                "apiStatus",
+
+                "🔴 OFFLINE"
+
+            );
+
+
+
+        }
 
 
 
@@ -1757,6 +2414,89 @@ async function initSystem(){
 
 
 }
+
+
+
+
+
+
+
+
+
+// ========================================
+// GLOBAL ACCESS
+// ========================================
+
+window.getOSS =
+getOSS;
+
+
+window.getAllOSS =
+getAllOSS;
+
+
+window.getIMS =
+getIMS;
+
+
+window.getAllIMS =
+getAllIMS;
+
+
+window.getDONEAPI =
+getDONEAPI;
+
+
+window.syncDONEAPI =
+syncDONEAPI;
+
+
+window.getMasterAPI =
+getMasterAPI;
+
+
+window.refreshSystem =
+refreshSystem;
+
+
+window.manualSyncDONE =
+manualSyncDONE;
+
+
+window.exportOSS =
+exportOSS;
+
+
+window.exportIMS =
+exportIMS;
+
+
+window.exportDONE =
+exportDONE;
+
+
+
+
+
+
+
+
+
+// ========================================
+// AUTO START
+// ========================================
+
+document.addEventListener(
+
+"DOMContentLoaded",
+
+()=>{
+
+
+    initSystem();
+
+
+});
 
 
 
@@ -1790,30 +2530,8 @@ window.addEventListener(
 
 
 
-// ========================================
-// AUTO START WEB
-// ========================================
-
-document.addEventListener(
-
-"DOMContentLoaded",
-
-()=>{
-
-
-    initSystem();
-
-
-});
-
-
-
-
-
-
-
-
-
 console.log(
+
 "API JS V5 FINAL COMPLETE"
+
 );
