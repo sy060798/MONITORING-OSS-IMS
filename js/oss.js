@@ -1705,15 +1705,44 @@ function importOSSExcel(file){
 
 
             if(
-                result &&
-                result.success
-            ){
+    result &&
+    result.success
+){
+
+    alert(
+
+`Upload OSS selesai
+
+✅ Berhasil masuk : ${result.inserted || 0}
+
+⚠️ Duplikat tidak masuk : ${result.duplicate || 0}
+
+📄 Total file : ${result.total || rows.length}`
+
+    );
 
 
+    closeUploadOSS();
 
-                alert(
-                    "Upload OSS berhasil"
-                );
+
+    if(
+        typeof loadOSS==="function"
+    ){
+
+        await loadOSS();
+
+    }
+
+
+    if(
+        typeof syncOSSToDashboard==="function"
+    ){
+
+        syncOSSToDashboard();
+
+    }
+
+}
 
 
 
