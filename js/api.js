@@ -2535,3 +2535,319 @@ console.log(
 "API JS V5 FINAL COMPLETE"
 
 );
+
+// ========================================
+// DUPLICATE GUARD SYSTEM V1
+// TAMBAHAN TANPA UBAH API LAMA
+// ========================================
+
+
+function normalizeReference(ref){
+
+    return String(ref || "")
+    .trim()
+    .replace(/\s+/g,"")
+    .toUpperCase();
+
+}
+
+
+
+// ========================================
+// CEK DUPLICATE OSS
+// ========================================
+
+function checkDuplicateOSSAPI(rows){
+
+
+    const sheet =
+    getSheet(CONFIG.OSS_SHEET);
+
+
+
+    let existing = new Set();
+
+
+
+    let last =
+    sheet.getLastRow();
+
+
+
+    if(last > 1){
+
+
+        let data =
+
+        sheet
+        .getRange(
+            2,
+            2,
+            last-1,
+            1
+        )
+        .getValues();
+
+
+
+        data.forEach(r=>{
+
+
+            let ref =
+            normalizeReference(r[0]);
+
+
+            if(ref){
+
+                existing.add(ref);
+
+            }
+
+
+        });
+
+
+    }
+
+
+
+
+
+    let duplicate=[];
+
+    let clean=[];
+
+
+
+    rows.forEach(item=>{
+
+
+        let ref =
+        normalizeReference(
+            item.reference_code
+        );
+
+
+
+        if(!ref){
+
+            duplicate.push({
+
+                reference_code:"",
+                status:"Reference kosong"
+
+            });
+
+
+            return;
+
+        }
+
+
+
+
+
+        if(existing.has(ref)){
+
+
+            duplicate.push({
+
+                reference_code:ref,
+
+                status:
+                "Sudah ada OSS"
+
+            });
+
+
+
+        }
+
+        else{
+
+
+            existing.add(ref);
+
+
+            clean.push(item);
+
+
+        }
+
+
+    });
+
+
+
+
+    return {
+
+
+        rows_baru:clean,
+
+
+        duplicate:duplicate,
+
+
+        jumlah_duplicate:
+        duplicate.length
+
+
+    };
+
+
+}
+
+
+
+
+
+
+
+
+// ========================================
+// CEK DUPLICATE IMS
+// ========================================
+
+function checkDuplicateIMSAPI(rows){
+
+
+    const sheet =
+    getSheet(CONFIG.IMS_SHEET);
+
+
+
+    let existing = new Set();
+
+
+
+    let last =
+    sheet.getLastRow();
+
+
+
+    if(last > 1){
+
+
+        let data =
+
+        sheet
+        .getRange(
+            2,
+            3,
+            last-1,
+            1
+        )
+        .getValues();
+
+
+
+        data.forEach(r=>{
+
+
+            let ref =
+            normalizeReference(r[0]);
+
+
+            if(ref){
+
+                existing.add(ref);
+
+            }
+
+
+        });
+
+
+    }
+
+
+
+
+
+    let duplicate=[];
+
+    let clean=[];
+
+
+
+
+    rows.forEach(item=>{
+
+
+        let ref =
+        normalizeReference(
+            item.reference_code
+        );
+
+
+
+        if(!ref){
+
+
+            duplicate.push({
+
+                reference_code:"",
+                status:"Reference kosong"
+
+            });
+
+
+            return;
+
+        }
+
+
+
+
+
+        if(existing.has(ref)){
+
+
+            duplicate.push({
+
+                reference_code:ref,
+
+                status:
+                "Sudah ada IMS"
+
+            });
+
+
+        }
+
+        else{
+
+
+            existing.add(ref);
+
+
+            clean.push(item);
+
+
+        }
+
+
+    });
+
+
+
+
+
+    return {
+
+
+        rows_baru:clean,
+
+
+        duplicate:duplicate,
+
+
+        jumlah_duplicate:
+        duplicate.length
+
+
+    };
+
+
+}
