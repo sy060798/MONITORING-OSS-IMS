@@ -2624,23 +2624,20 @@ function importIMSExcel(file){
             if(result.success){
 
 
-    alert(
 
-`Import IMS selesai
+                alert(
 
-✅ Berhasil masuk : ${result.inserted || 0}
+                    "Import IMS berhasil"
 
-⚠️ Duplikat tidak masuk : ${result.duplicate || 0}
-
-📄 Total file : ${result.total || rows.length}`
-
-    );
+                );
 
 
-    await refreshIMSData();
+
+                await refreshIMSData();
 
 
-}
+
+            }
 
 
 
